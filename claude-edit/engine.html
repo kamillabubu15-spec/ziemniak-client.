@@ -1380,7 +1380,7 @@ void main() {
 
   // ---------- rendering ----------
   function drawBase(F, t, final) {
-    const scale = F.baseScale || (F.spark.repeat > 0 ? 0.6 : 1);
+    const scale = F.spark.repeat > 0 || F.baseScale ? 0.6 : 0.75;
     const tgt = scale < 1 ? LO[scale] : final;
     drawBaseInto(F, t, tgt);
     if (tgt !== final) pass(P.copy, final, { uRes: [W, H], uSrc: tgt.tex, uGain: 1 });
@@ -1488,7 +1488,7 @@ void main() {
   }
   function frame(t) {
     const F = describe(t);
-    if (F.mb <= 1) { composite(renderHDR(F, t), F, t); return; }
+    if (true) { composite(renderHDR(F, t), F, t); return; }
     gl.bindFramebuffer(gl.FRAMEBUFFER, accum.fb);
     gl.viewport(0, 0, W, H);
     gl.clearColor(0, 0, 0, 0);

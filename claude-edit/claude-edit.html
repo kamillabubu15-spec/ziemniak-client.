@@ -1,0 +1,1004 @@
+<title>Claude Edit</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@500;700&family=Unbounded:wght@400;900&display=swap">
+<style>
+/* Layout: the 9:16 edit is the hero on the left, a cue sheet of the cut sits beside it; one column on phones */
+:root {
+  --ink: #0d0a12;
+  --panel: #191220;
+  --line: #2e2336;
+  --cream: #f7ecdc;
+  --muted: #a99aa6;
+  --clay: #d97757;
+  --ember: #ff9459;
+  --peach: #ffcfae;
+  --lilac: #a99bff;
+  --halo: rgba(217, 119, 87, .42);
+  --display: "Unbounded", "Arial Black", system-ui, sans-serif;
+  --serif: "Instrument Serif", Georgia, "Times New Roman", serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--ink); color: var(--cream); }
+body {
+  margin: 0;
+  font: 14px/1.55 var(--mono);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 32px 48px;
+}
+.wrap {
+  max-width: 1120px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: clamp(28px, 5vw, 64px);
+  align-items: start;
+}
+.stagecol { display: grid; gap: 14px; }
+.player {
+  position: relative;
+  height: min(84vh, 800px);
+  aspect-ratio: 9 / 16;
+  max-width: 100%;
+  border-radius: 26px;
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 0 0 1px var(--line), 0 60px 140px -60px var(--halo);
+  cursor: pointer;
+}
+.player canvas { display: block; width: 100%; height: 100%; object-fit: contain; }
+.player:fullscreen { border-radius: 0; box-shadow: none; }
+.cover {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 7%;
+  background: linear-gradient(to top, rgba(13, 10, 18, .88), rgba(13, 10, 18, 0) 26%);
+}
+.bigplay {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  border: 0;
+  border-radius: 999px;
+  padding: 10px 22px 10px 10px;
+  background: var(--cream);
+  color: var(--ink);
+  font: 700 13px var(--mono);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform .15s ease;
+}
+.bigplay:hover { transform: scale(1.04); }
+.bigplay:disabled { cursor: progress; transform: none; }
+.bigplay .ico {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: var(--clay);
+  color: var(--cream);
+  display: grid; place-items: center;
+}
+.controls { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.ctl {
+  flex: none;
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--cream);
+  display: grid; place-items: center;
+  cursor: pointer;
+  padding: 0;
+}
+.ctl:hover { border-color: var(--clay); color: var(--peach); }
+.ctl svg, .bigplay svg { width: 20px; height: 20px; fill: currentColor; }
+.time { flex: none; font-variant-numeric: tabular-nums; color: var(--muted); font-size: 12px; }
+#scrub { flex: 1; min-width: 0; accent-color: var(--clay); height: 24px; margin: 0; }
+:focus-visible { outline: 2px solid var(--ember); outline-offset: 3px; }
+
+.info { min-width: 0; padding-top: 8px; }
+.eyebrow { margin: 0; font: 700 11px/1.4 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--clay); }
+h1 {
+  margin: 14px 0 0;
+  font: 900 clamp(54px, 8.4vw, 108px)/.92 var(--display);
+  letter-spacing: -.02em;
+  text-wrap: balance;
+}
+h1 em { font: italic 400 .64em var(--serif); letter-spacing: 0; color: var(--peach); margin-left: .1em; }
+.lead { margin: 18px 0 0; max-width: 34ch; font: italic 400 22px/1.35 var(--serif); color: #d9cbc0; text-wrap: pretty; }
+.cuehead { margin: 34px 0 10px; font: 700 11px var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+.cues { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.cue button {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: baseline;
+  padding: 11px 12px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.cue .tc { font-variant-numeric: tabular-nums; font-size: 12px; color: var(--muted); }
+.cue .nm { font: 900 15px/1.2 var(--display); letter-spacing: .02em; }
+.cue .nt { font-size: 12px; color: var(--muted); text-align: right; }
+.cue button:hover .nm { color: var(--peach); }
+.cue button[aria-current="true"] { background: var(--panel); }
+.cue button[aria-current="true"] .nm { color: var(--ember); }
+.cue button[aria-current="true"] .tc { color: var(--cream); }
+.keys { margin: 16px 0 0; font-size: 12px; color: var(--muted); }
+kbd { font: 700 11px var(--mono); padding: 2px 6px; border: 1px solid var(--line); border-radius: 5px; color: var(--cream); background: var(--panel); }
+
+@media (max-width: 760px) {
+  body { padding-block: 16px 36px; }
+  .wrap { grid-template-columns: minmax(0, 1fr); }
+  .player { width: 100%; height: auto; }
+  .cue .nt { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .bigplay { transition: none; } }
+</style>
+
+<main class="wrap">
+  <section class="stagecol" aria-label="Odtwarzacz">
+    <div class="player" id="player">
+      <canvas id="stage" width="1080" height="1920" aria-label="Animowany edit o Claudzie"></canvas>
+      <div class="cover" id="cover">
+        <button class="bigplay" id="bigplay" type="button">
+          <span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></span>
+          <span id="biglabel">Odtwórz z dźwiękiem</span>
+        </button>
+      </div>
+    </div>
+    <div class="controls">
+      <button class="ctl" id="btn-play" type="button" aria-label="Odtwórz">
+        <svg viewBox="0 0 24 24" aria-hidden="true" id="ico-play"><path d="M8 5v14l11-7z"/></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true" id="ico-pause" hidden><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>
+      </button>
+      <button class="ctl" id="btn-restart" type="button" aria-label="Od początku">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5V1.5L7 6l5 4.5V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg>
+      </button>
+      <input id="scrub" type="range" min="0" max="26" step="0.01" value="0" aria-label="Pozycja w edicie">
+      <span class="time" id="time">0:00 / 0:26</span>
+      <button class="ctl" id="btn-mute" type="button" aria-label="Wycisz" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true" id="ico-vol"><path d="M3 9v6h4l5 4V5L7 9H3z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true" id="ico-muted" hidden><path d="M3 9v6h4l5 4V5L7 9H3z"/><path d="M16 9.5l5 5M21 9.5l-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <button class="ctl" id="btn-full" type="button" aria-label="Pełny ekran">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  </section>
+
+  <section class="info">
+    <p class="eyebrow">Fan edit · 0:26 · 120 BPM · d-moll</p>
+    <h1>Claude<em>edit</em></h1>
+    <p class="lead">Pionowy edit cięty pod beat. Obraz i muzyka generują się na żywo w przeglądarce, klatka po klatce.</p>
+    <p class="cuehead">Ścieżka montażu</p>
+    <ol class="cues" id="cues"></ol>
+    <p class="keys"><kbd>Spacja</kbd> odtwórz / pauza · klik w scenę przeskakuje do niej</p>
+  </section>
+</main>
+
+<script>
+(() => {
+  const W = 1080, H = 1920, BPM = 120, BEAT = 60 / BPM, DURATION = 26, POSTER_T = 16.62;
+  const COL = {
+    ink: '#0d0a12', plum: '#3a1840', clay: '#d97757', ember: '#ff9459', peach: '#ffcfae',
+    cream: '#f7ecdc', lilac: '#a99bff', muted: '#b8a8b3', green: '#8fe0a5'
+  };
+  const F = {
+    display: '"Unbounded", "Arial Black", sans-serif',
+    serif: '"Instrument Serif", Georgia, serif',
+    mono: '"JetBrains Mono", ui-monospace, monospace'
+  };
+  const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const FX = REDUCED ? .35 : 1;
+  const PARTS = [COL.clay, COL.peach, COL.lilac, COL.cream, COL.ember];
+
+  const canvas = document.getElementById('stage');
+  const ctx = canvas.getContext('2d');
+
+  // ---------- math ----------
+  const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+  const lerp = (a, b, k) => a + (b - a) * k;
+  const prog = (t, t0, d) => clamp((t - t0) / d);
+  const easeOutExpo = k => k >= 1 ? 1 : 1 - Math.pow(2, -10 * k);
+  const easeOutCubic = k => 1 - Math.pow(1 - k, 3);
+  const easeInCubic = k => k * k * k;
+  const easeInOut = k => k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+  const easeOutBack = k => 1 + 2.70158 * Math.pow(k - 1, 3) + 1.70158 * Math.pow(k - 1, 2);
+  function rng(seed) {
+    return () => {
+      seed = seed + 0x6D2B79F5 | 0;
+      let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function hexA(hex, a) {
+    const n = parseInt(hex.slice(1), 16);
+    return `rgba(${n >> 16 & 255},${n >> 8 & 255},${n & 255},${a})`;
+  }
+  const sinceBeat = t => ((t % BEAT) + BEAT) % BEAT;
+  const pulse = (t, k = 9) => Math.exp(-sinceBeat(t) * k);
+
+  // ---------- shared timing ----------
+  const TYPING = [
+    { t0: .35, cps: 12, text: '> hej, Claude' },
+    { t0: 1.95, cps: 20, text: 'Cześć! W czym mogę pomóc?' },
+    { t0: 6.0, cps: 30, text: '~/projekt $ claude' },
+    { t0: 23.7, cps: 12, text: '> claude' }
+  ];
+  const typed = (t, s) => s.text.slice(0, clamp(Math.floor((t - s.t0) * s.cps), 0, s.text.length));
+  const SCENES = [
+    { t: 0, name: 'Intro', note: 'hej, Claude' },
+    { t: 4, name: 'Drop', note: 'pierwsze uderzenie' },
+    { t: 6, name: 'Kod', note: 'pisze, testuje, naprawia' },
+    { t: 8, name: 'Myśli', note: 'krok po kroku' },
+    { t: 10, name: 'Języki', note: '8 słów w 2 sekundy' },
+    { t: 12, name: 'Tworzy', note: 'mandala na beat' },
+    { t: 14, name: 'Build', note: 'Haiku, Sonnet, Opus' },
+    { t: 16, name: 'Drop 2', note: 'pełny bas i dzwonek' },
+    { t: 22, name: 'Outro', note: 'zawsze tu jest' }
+  ];
+  const IMPACTS = [[4, 34], [16, 40], [19, 10], [21.5, 18], [22, 12]];
+  const FLASHES = [[4, 1, .45], [16, 1, .55], [19, .35, .3], [21.5, .5, .35], [22, .45, .6]];
+  const CUTS = [6, 8, 10, 12, 14, 20];
+
+  // ---------- drawing helpers ----------
+  function bgFill(c) { ctx.fillStyle = c; ctx.fillRect(-80, -80, W + 160, H + 160); }
+  function bgRadial(inner, cy, r, a) {
+    bgFill(COL.ink);
+    const g = ctx.createRadialGradient(W / 2, cy, 0, W / 2, cy, r);
+    g.addColorStop(0, hexA(inner, a)); g.addColorStop(1, hexA(inner, 0));
+    ctx.fillStyle = g; ctx.fillRect(-80, -80, W + 160, H + 160);
+  }
+  function glow(x, y, r, color, a) {
+    const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, hexA(color, a)); g.addColorStop(1, hexA(color, 0));
+    ctx.fillStyle = g; ctx.fillRect(x - r, y - r, r * 2, r * 2);
+  }
+  const SPARK = (() => {
+    const r = rng(7);
+    return Array.from({ length: 12 }, (_, i) => ({ a: i / 12 * Math.PI * 2 + (r() - .5) * .2, l: .6 + r() * .4 }));
+  })();
+  function spark(x, y, R, rot, color = COL.clay, alpha = 1) {
+    if (R <= 0) return;
+    ctx.save(); ctx.translate(x, y); ctx.rotate(rot);
+    ctx.strokeStyle = hexA(color, alpha); ctx.lineCap = 'round'; ctx.lineWidth = R * .16;
+    ctx.beginPath();
+    for (const s of SPARK) { ctx.moveTo(0, 0); ctx.lineTo(Math.cos(s.a) * R * s.l, Math.sin(s.a) * R * s.l); }
+    ctx.stroke(); ctx.restore();
+  }
+  function fitSize(str, font, weight, maxW, maxSize) {
+    ctx.font = `${weight} ${maxSize}px ${font}`;
+    const w = ctx.measureText(str).width;
+    return w > maxW ? maxSize * maxW / w : maxSize;
+  }
+  function text(str, x, y, o = {}) {
+    const { size = 120, font = F.display, weight = 900, color = COL.cream, align = 'center', alpha = 1,
+      scale = 1, chroma = 0, glowC = null, glowR = 0, spacing = 0 } = o;
+    if (alpha <= 0 || !str) return;
+    ctx.save();
+    ctx.translate(x, y); ctx.scale(scale, scale);
+    ctx.font = `${weight} ${size}px ${font}`;
+    ctx.textAlign = align; ctx.textBaseline = 'middle';
+    if ('letterSpacing' in ctx) ctx.letterSpacing = spacing + 'px';
+    ctx.globalAlpha = alpha;
+    const paint = (c, dx) => { ctx.fillStyle = c; ctx.fillText(str, dx, 0); };
+    if (chroma > .5) {
+      ctx.globalCompositeOperation = 'lighter';
+      paint('#ff2d55', -chroma); paint('#2de2ff', chroma);
+      ctx.globalCompositeOperation = 'source-over';
+    }
+    if (glowC) { ctx.shadowColor = glowC; ctx.shadowBlur = glowR; }
+    paint(color, 0);
+    ctx.restore();
+  }
+  function monoLine(str, x, y, color, size, cursor, alpha = 1) {
+    ctx.save(); ctx.globalAlpha = alpha;
+    ctx.font = `500 ${size}px ${F.mono}`; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = color; ctx.fillText(str, x, y);
+    if (cursor) {
+      const w = ctx.measureText(str).width;
+      ctx.fillStyle = COL.ember; ctx.fillRect(x + w + 8, y - size * .55, size * .55, size * 1.1);
+    }
+    ctx.restore();
+  }
+  function burst(t, t0, seed, n, x, y, speed, life, colors) {
+    const lt = t - t0;
+    if (lt < 0 || lt > life) return;
+    const r = rng(seed), fade = Math.pow(1 - lt / life, 1.5), k = 2.4, d0 = (1 - Math.exp(-k * lt)) / k;
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < n; i++) {
+      const a = r() * Math.PI * 2, v = speed * (.3 + r() * .7), sz = 3 + r() * 10, c = colors[(r() * colors.length) | 0];
+      const px = x + Math.cos(a) * v * d0, py = y + Math.sin(a) * v * d0 + 70 * lt * lt;
+      ctx.fillStyle = hexA(c, fade);
+      ctx.beginPath(); ctx.arc(px, py, sz * (1 - .5 * lt / life), 0, 7); ctx.fill();
+    }
+    ctx.restore();
+  }
+  function ring(t, t0, dur, x, y, maxR, color, width) {
+    const k = prog(t, t0, dur);
+    if (t < t0 || k >= 1) return;
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    ctx.strokeStyle = hexA(color, (1 - k) * .9); ctx.lineWidth = width * (1 - k) + 1;
+    ctx.beginPath(); ctx.arc(x, y, easeOutExpo(k) * maxR, 0, 7); ctx.stroke();
+    ctx.restore();
+  }
+  function speedLines(phase, cx, cy, n, seed, alpha, color) {
+    const r = rng(seed);
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round';
+    for (let i = 0; i < n; i++) {
+      const a = r() * Math.PI * 2, sp = .5 + r() * .8, len = 120 + r() * 380, off = r(), lw = 2 + r() * 5;
+      const d = ((off + phase * sp) % 1) * 1500 + 150;
+      ctx.strokeStyle = hexA(color, alpha * d / 1650); ctx.lineWidth = lw;
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(a) * d, cy + Math.sin(a) * d);
+      ctx.lineTo(cx + Math.cos(a) * (d + len), cy + Math.sin(a) * (d + len));
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+  function dust(t, n, seed, alpha, color = COL.peach) {
+    const r = rng(seed);
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < n; i++) {
+      const x0 = r() * W, y0 = r() * H, sp = 10 + r() * 40, sz = 2 + r() * 3, ph = r() * 6.28;
+      const y = ((y0 - t * sp) % H + H) % H, x = x0 + Math.sin(t * .7 + ph) * 14;
+      ctx.fillStyle = hexA(color, alpha * (.3 + .7 * Math.abs(Math.sin(t + ph))));
+      ctx.fillRect(x, y, sz, sz);
+    }
+    ctx.restore();
+  }
+  function marquee(str, y, size, off, color, alpha) {
+    ctx.save();
+    ctx.font = `900 ${size}px ${F.display}`; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+    ctx.fillStyle = hexA(color, alpha);
+    const w = ctx.measureText(str).width;
+    for (let x = ((off % w) + w) % w - w - 80; x < W + 80; x += w) ctx.fillText(str, x, y);
+    ctx.restore();
+  }
+  function circleText(str, cx, cy, R, rot, size, color, alpha) {
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(rot);
+    ctx.font = `900 ${size}px ${F.display}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = hexA(color, alpha);
+    const stretch = Math.PI * 2 * R / ctx.measureText(str).width;
+    let a = 0;
+    for (const ch of str) {
+      const cw = ctx.measureText(ch).width * stretch;
+      ctx.save(); ctx.rotate(a + cw / 2 / R); ctx.translate(0, -R); ctx.fillText(ch, 0, 0); ctx.restore();
+      a += cw / R;
+    }
+    ctx.restore();
+  }
+  function petals(cx, cy, n, dist, rx, ry, rot, color, a) {
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, rx);
+    g.addColorStop(0, hexA(color, a)); g.addColorStop(1, hexA(color, 0));
+    ctx.fillStyle = g;
+    for (let i = 0; i < n; i++) {
+      ctx.save(); ctx.translate(cx, cy); ctx.rotate(rot + i * Math.PI * 2 / n); ctx.translate(dist, 0); ctx.scale(1, ry / rx);
+      ctx.beginPath(); ctx.arc(0, 0, rx, 0, 7); ctx.fill(); ctx.restore();
+    }
+  }
+  function orbit(cx, cy, rx, ry, tilt, a, p) {
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(tilt);
+    ctx.strokeStyle = hexA(COL.cream, .2 + .2 * p); ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2); ctx.stroke();
+    const x = Math.cos(a) * rx, y = Math.sin(a) * ry;
+    ctx.globalCompositeOperation = 'lighter';
+    glow(x, y, 70, COL.ember, .9);
+    ctx.fillStyle = COL.cream; ctx.beginPath(); ctx.arc(x, y, 9, 0, 7); ctx.fill();
+    ctx.restore();
+  }
+
+  const grain = document.createElement('canvas');
+  grain.width = grain.height = 512;
+  {
+    const g = grain.getContext('2d'), img = g.createImageData(512, 512), r = rng(99);
+    for (let i = 0; i < img.data.length; i += 4) {
+      const v = r() * 255;
+      img.data[i] = img.data[i + 1] = img.data[i + 2] = v; img.data[i + 3] = 255;
+    }
+    g.putImageData(img, 0, 0);
+  }
+  const vig = ctx.createRadialGradient(W / 2, H / 2, H * .28, W / 2, H / 2, H * .78);
+  vig.addColorStop(0, 'rgba(0,0,0,0)'); vig.addColorStop(1, 'rgba(0,0,0,.62)');
+
+  // ---------- scenes ----------
+  function sceneIntro(t) {
+    bgRadial(COL.plum, 820, 900, .75);
+    dust(t, 70, 5, .5);
+    if (t >= 3.75) {
+      const k = prog(t, 3.75, .25);
+      bgFill(COL.ink);
+      ctx.fillStyle = hexA(COL.cream, .9);
+      ctx.beginPath(); ctx.arc(W / 2, 820, 5 + 7 * k, 0, 7); ctx.fill();
+      return;
+    }
+    const ap = easeOutCubic(prog(t, .1, 1.4)), rise = easeInCubic(prog(t, 2.3, 1.45));
+    const R = (64 + 6 * Math.sin(t * 3.2)) * ap + 120 * rise;
+    const j = rng(Math.floor(t * 40) + 17), jit = 18 * rise * FX;
+    const sx = W / 2 + (j() - .5) * jit, sy = 820 + (j() - .5) * jit;
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    glow(sx, sy, R * 4.2, COL.clay, .3 * ap + .35 * rise);
+    ctx.restore();
+    spark(sx, sy, R, t * .3 + 3 * rise * rise, COL.clay, ap);
+    const fade = 1 - rise * .7, x0 = 168, blink = Math.floor(t * 2.6) % 2 === 0;
+    const l1 = typed(t, TYPING[0]), l2 = typed(t, TYPING[1]), onL2 = t >= TYPING[1].t0 - .15;
+    monoLine(l1, x0, 1240, COL.cream, 46, !onL2 && (blink || l1.length < TYPING[0].text.length), fade);
+    if (onL2) {
+      spark(x0 + 18, 1322, 20, t * 2, COL.clay, fade);
+      monoLine(l2, x0 + 54, 1322, COL.peach, 46, blink || l2.length < TYPING[1].text.length, fade);
+    }
+  }
+
+  function sceneDrop(t) {
+    const lt = t - 4, p = pulse(t), cy = 760;
+    bgRadial(COL.plum, cy, 1100, 1);
+    speedLines(t * 1.4, W / 2, cy, 46, 21, .35 * Math.exp(-lt * 1.5) + .12 + .15 * p, COL.peach);
+    ring(t, 4, .9, W / 2, cy, 1300, COL.peach, 44);
+    for (let b = 1; b < 4; b++) ring(t, 4 + b * BEAT, .6, W / 2, cy, 700, COL.clay, 16);
+    const R = 230 * easeOutBack(prog(lt, 0, .45)) + 26 * p;
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(W / 2, cy, R * 3.4, COL.clay, .55 + .2 * p); ctx.restore();
+    spark(W / 2, cy, R, .4 + lt * .7);
+    burst(t, 4, 11, 150, W / 2, cy, 1500, 2.2, PARTS);
+    const k = easeOutExpo(prog(lt, 0, .35));
+    text('CLAUDE', W / 2, 1360, {
+      size: fitSize('CLAUDE', F.display, 900, 960, 240), scale: lerp(1.5, 1, k) * (1 + .05 * p),
+      chroma: (24 * (1 - prog(lt, 0, .5)) + 8 * p) * FX, glowC: hexA(COL.clay, .8), glowR: 40
+    });
+    const kp = easeOutCubic(prog(t, 4.5, .4));
+    text('/klɔːd/  ·  asystent AI', W / 2, 1530 + 20 * (1 - kp), { size: 38, font: F.mono, weight: 500, color: COL.lilac, alpha: kp });
+  }
+
+  const CODE = [
+    'def odpowiedz(pytanie):', '    kontekst = przeczytaj(pytanie)', '    plan = pomysl(kontekst, krok_po_kroku=True)',
+    '    return napisz(plan)', '', 'const fix = await claude.review(diff);', 'if (testy.failed) zastosuj(fix);',
+    'git commit -m "fix: naprawiony bug"', '', '$ claude "napraw testy"', '> Czytam 14 plików...',
+    '> Znalazłem problem w auth.ts:42', '> Poprawka gotowa.', '', 'SELECT pomysl FROM glowa WHERE dobry = 1;',
+    'for (const plik of repo) czytaj(plik);', 'npm test  ->  128 passed', 'fn main() { println!("czesc"); }',
+    'while (!gotowe) iteruj();', 'class Asystent extends Pomocny {}', 'export default function Edit() {',
+    '  return <Claude bpm={120} />;', '}'
+  ];
+  function sceneCode(t) {
+    const lt = t - 6, p = pulse(t), bi = clamp(Math.floor(lt / BEAT), 0, 3);
+    bgRadial(COL.plum, 960, 1200, .7);
+    ctx.save();
+    ctx.translate(W / 2, H / 2); ctx.rotate(-.12); ctx.translate(-W / 2, -H / 2);
+    ctx.font = `500 30px ${F.mono}`; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    const LH = 54, scroll = t * 240, first = Math.floor(scroll / LH), rem = scroll % LH;
+    const center = Math.round((H / 2 + rem) / LH);
+    for (let i = -6; i < 46; i++) {
+      const li = first + i, y = i * LH - rem, hot = i === center;
+      const pick = n => CODE[((n % CODE.length) + CODE.length) % CODE.length];
+      ctx.fillStyle = hot ? hexA(COL.ember, .3 + .6 * p) : hexA(COL.lilac, .17);
+      ctx.fillText(pick(li), -140 + ((li * 37) % 4 + 4) % 4 * 26, y);
+      ctx.fillStyle = hexA(COL.lilac, .1);
+      ctx.fillText(pick(li + 11), 760, y);
+    }
+    ctx.restore();
+    monoLine(typed(t, TYPING[2]), 90, 300, COL.cream, 34, Math.floor(t * 2.6) % 2 === 0);
+    const WORDS = ['PISZE', 'KOD', 'TESTUJE', 'NAPRAWIA'];
+    const sz = Math.min(...WORDS.map(w => fitSize(w, F.display, 900, 920, 170)));
+    WORDS.forEach((w, i) => {
+      const tb = 6 + i * BEAT;
+      if (t < tb) return;
+      const k = easeOutExpo(prog(t, tb, .28)), dir = i % 2 ? 1 : -1;
+      text(w, W / 2 + dir * (1 - k) * 340, 690 + i * 205, {
+        size: sz, scale: lerp(1.3, 1, k), color: i % 2 ? COL.ember : COL.cream,
+        chroma: ((1 - k) * 26 + (i === bi ? 7 * p : 0)) * FX, alpha: i < bi ? .5 : 1
+      });
+    });
+    const kp = easeOutCubic(prog(t, 7.5, .25));
+    if (kp > 0) {
+      ctx.save(); ctx.globalAlpha = kp; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+      ctx.font = `700 34px ${F.mono}`;
+      const pw = ctx.measureText('PASS').width + 28, x = 90, y = 1580;
+      ctx.fillStyle = COL.green; ctx.fillRect(x, y - 27, pw, 54);
+      ctx.fillStyle = COL.ink; ctx.fillText('PASS', x + 14, y + 2);
+      ctx.font = `500 34px ${F.mono}`; ctx.fillStyle = COL.cream;
+      ctx.fillText('128/128 testów', x + pw + 22, y + 2);
+      ctx.restore();
+    }
+  }
+
+  const NODES = (() => {
+    const r = rng(31), n = [];
+    for (let i = 0; i < 48; i++) n.push({ x: 80 + r() * (W - 160), y: 180 + r() * (H - 360), ph: r() * 6.28 });
+    return n;
+  })();
+  const EDGES = [];
+  for (let i = 0; i < NODES.length; i++)
+    for (let j = i + 1; j < NODES.length; j++)
+      if (Math.hypot(NODES[i].x - NODES[j].x, NODES[i].y - NODES[j].y) < 290) EDGES.push([i, j]);
+  function sceneThink(t) {
+    const lt = t - 8, p = pulse(t), cx = W / 2, cy = 900;
+    bgRadial(COL.plum, cy, 1100, .8);
+    const wave = easeOutCubic(sinceBeat(t) / BEAT) * 1250;
+    const pts = NODES.map(n => {
+      const x = n.x + Math.sin(t * .9 + n.ph) * 16, y = n.y + Math.cos(t * .7 + n.ph) * 16;
+      const d = Math.hypot(x - cx, y - cy);
+      return { x, y, b: Math.exp(-(((d - wave) / 110) ** 2)) * (.4 + .6 * p) };
+    });
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.lineWidth = 2;
+    for (const [a, b] of EDGES) {
+      const A = pts[a], B = pts[b], k = (A.b + B.b) / 2;
+      ctx.strokeStyle = hexA(k > .2 ? COL.ember : COL.lilac, .1 + .7 * k);
+      ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(B.x, B.y); ctx.stroke();
+    }
+    for (const q of pts) {
+      glow(q.x, q.y, 30 + 50 * q.b, COL.ember, .12 + .6 * q.b);
+      ctx.fillStyle = hexA(COL.cream, .45 + .55 * q.b);
+      ctx.beginPath(); ctx.arc(q.x, q.y, 4 + 6 * q.b, 0, 7); ctx.fill();
+    }
+    ctx.restore();
+    spark(cx - 200, 290, 24, t * 3, COL.clay);
+    monoLine('zastanawia się' + '.'.repeat(1 + Math.floor(t * 3) % 3), cx - 160, 290, COL.muted, 36, false);
+    const k = easeOutExpo(prog(lt, 0, .3));
+    text('MYŚLI', cx, 860, {
+      size: fitSize('MYŚLI', F.display, 900, 920, 250), scale: lerp(1.35, 1, k) * (1 + .04 * p),
+      chroma: ((1 - k) * 24 + 5 * p) * FX, glowC: hexA(COL.ember, .7), glowR: 50
+    });
+    const S = ['krok', 'po', 'kroku'];
+    ctx.font = `italic 400 140px ${F.serif}`;
+    const fw = ctx.measureText(S.join(' ')).width;
+    const shown = S.filter((_, i) => t >= 8.5 + i * BEAT).join(' ');
+    text(shown, cx - fw / 2, 1080, { size: 140, font: F.serif, weight: 'italic 400', align: 'left', color: COL.peach });
+  }
+
+  const LANGS = [['cześć', 'PL'], ['hello', 'EN'], ['hola', 'ES'], ['bonjour', 'FR'], ['ciao', 'IT'], ['hallo', 'DE'], ['olá', 'PT'], ['ahoj', 'CS']];
+  const HELLOS = 'CZEŚĆ · HELLO · HOLA · BONJOUR · CIAO · HALLO · OLÁ · AHOJ · ';
+  function sceneLang(t) {
+    const lt = t - 10, cx = W / 2, cy = 940;
+    bgRadial(COL.plum, cy, 1000, .9);
+    marquee(HELLOS, 240, 96, t * 160, COL.clay, .2);
+    marquee(HELLOS, 1690, 96, -t * 160 - 300, COL.lilac, .18);
+    circleText('MÓWI TWOIM JĘZYKIEM · MÓWI TWOIM JĘZYKIEM · ', cx, cy, 430, t * .45, 48, COL.cream, .85);
+    ctx.strokeStyle = hexA(COL.lilac, .35); ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(cx, cy, 350, 0, 7); ctx.stroke();
+    const a = t * 2.4;
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    glow(cx + Math.cos(a) * 350, cy + Math.sin(a) * 350, 50, COL.ember, .95);
+    ctx.restore();
+    const idx = clamp(Math.floor(lt / .25), 0, 7), [w, code] = LANGS[idx];
+    const k = easeOutCubic(prog(lt, idx * .25, .14));
+    text(w, cx, cy - 10 + (1 - k) * 36, {
+      size: fitSize(w, F.serif, 'italic 400', 560, 220), font: F.serif, weight: 'italic 400',
+      scale: lerp(1.18, 1, k), glowC: hexA(idx % 2 ? COL.lilac : COL.clay, .95), glowR: 60
+    });
+    text(`${code}  ${String(idx + 1).padStart(2, '0')}/08`, cx, cy + 150, { size: 34, font: F.mono, weight: 700, color: COL.lilac, spacing: 4 });
+  }
+
+  function sceneCreate(t) {
+    const lt = t - 12, p = pulse(t), cx = W / 2, cy = 860, bi = clamp(Math.floor(lt / BEAT), 0, 3);
+    bgRadial(COL.plum, cy, 1100, .9);
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    petals(cx, cy, 16, 420 * (1 + .06 * p), 120, 22, t * .25 + .2, COL.peach, .35);
+    petals(cx, cy, 12, 250 * (1 + .1 * p), 220, 62, t * .5, COL.clay, .55);
+    petals(cx, cy, 8, 140 * (1 + .14 * p), 150, 42, -t * .8, COL.lilac, .5);
+    glow(cx, cy, 380, COL.ember, .3 + .25 * p);
+    ctx.restore();
+    spark(cx, cy, 80 + 12 * p, -t * 1.2, COL.cream);
+    const WS = ['ANALIZUJE', 'TŁUMACZY', 'TWORZY', 'UCZY'], w = WS[bi];
+    const k = easeOutExpo(prog(lt, bi * BEAT, .22));
+    text(w, cx, 1500, {
+      size: fitSize(w, F.display, 900, 920, 210), scale: lerp(1.55, 1, k) * (1 + .03 * p),
+      color: bi % 2 ? COL.ember : COL.cream, chroma: (1 - k) * 28 * FX
+    });
+    for (let i = 0; i < 4; i++) {
+      ctx.fillStyle = i <= bi ? COL.ember : hexA(COL.cream, .25);
+      ctx.beginPath(); ctx.arc(cx - 66 + i * 44, 1690, 9, 0, 7); ctx.fill();
+    }
+  }
+
+  function sceneBuild(t) {
+    const lt = t - 14, cx = W / 2, cy = 940;
+    if (t >= 15.75) {
+      const k = easeInCubic(prog(t, 15.75, .25));
+      bgFill(COL.ink);
+      ctx.save(); ctx.globalCompositeOperation = 'lighter';
+      glow(cx, cy, 300 * k + 40, COL.clay, .6);
+      ctx.fillStyle = COL.cream; ctx.fillRect(cx - W * k / 2, cy - 2, W * k, 4);
+      ctx.restore();
+      return;
+    }
+    const ramp = prog(t, 14, 1.75), z = 1 + .22 * easeInCubic(ramp);
+    ctx.save(); ctx.translate(cx, cy); ctx.scale(z, z); ctx.translate(-cx, -cy);
+    bgRadial(COL.plum, cy, 1000, .7 + .3 * ramp);
+    speedLines(lt + 1.2 * lt * lt, cx, cy, 80, 41, .2 + .6 * ramp, COL.cream);
+    ctx.restore();
+    if (t < 15.5) {
+      const M = [['HAIKU', 'szybki', COL.lilac], ['SONNET', 'zbalansowany', COL.peach], ['OPUS', 'najmocniejszy', COL.ember]];
+      const i = clamp(Math.floor(lt / BEAT), 0, 2), [name, desc, c] = M[i];
+      const k = easeOutExpo(prog(lt, i * BEAT, .25)), p = pulse(t);
+      text(name, cx, cy, {
+        size: fitSize(name, F.display, 900, 900, 230), scale: lerp(1.6, 1, k) * z, color: c,
+        chroma: ((1 - k) * 30 + 6 * p) * FX, glowC: hexA(c, .6), glowR: 40
+      });
+      text(desc, cx, cy + 170, { size: 84, font: F.serif, weight: 'italic 400', color: COL.cream, alpha: easeOutCubic(prog(lt, i * BEAT + .06, .2)) });
+    } else {
+      const n = clamp(Math.floor((t - 15.5) / (.25 / 6)) + 1, 1, 6);
+      const sz = fitSize('CLAUDE', F.display, 900, 940, 240);
+      ctx.font = `900 ${sz}px ${F.display}`;
+      const full = ctx.measureText('CLAUDE').width;
+      text('CLAUDE'.slice(0, n), cx - full / 2, cy, { size: sz, align: 'left', color: n % 2 ? COL.cream : COL.ember, chroma: 14 * FX });
+    }
+  }
+
+  function sceneDrop2(t) {
+    const lt = t - 16, p = pulse(t), cx = W / 2, cy = 820;
+    bgFill(COL.ink);
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    glow(cx + Math.sin(t * .7) * 260, cy + Math.cos(t * .5) * 300, 900, COL.plum, 1);
+    glow(cx + Math.cos(t * .9) * 320, 1400 + Math.sin(t * .6) * 200, 800, COL.clay, .22 + .1 * p);
+    glow(cx - Math.sin(t * .8) * 300, 400 + Math.cos(t * .7) * 200, 700, COL.lilac, .16);
+    ctx.restore();
+    for (let i = 0; i < 9; i++) marquee('CLAUDE  CLAUDE  ', 140 + i * 210, 150, (i % 2 ? 1 : -1) * t * 140 + i * 90, COL.clay, .07 + .05 * p);
+    const R = 300 * easeOutBack(prog(lt, 0, .5)) + 40 * p;
+    const spin = Math.PI * 2 * easeOutCubic(prog(t, 19, .9));
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(cx, cy, R * 3, COL.clay, .5 + .25 * p); ctx.restore();
+    spark(cx, cy, R, lt * .5 + spin);
+    orbit(cx, cy, 480, 130, .38, t * 1.6, p);
+    orbit(cx, cy, 480, 130, -.38, t * 1.6 + Math.PI, p);
+    for (let b = 32; b < 44; b++) {
+      const tb = b * BEAT;
+      if (t < tb || t > tb + 1.4) continue;
+      ring(t, tb, .6, cx, cy, 720, COL.peach, 14);
+      burst(t, tb, 300 + b, 46, cx, cy, 1200, 1.4, PARTS);
+    }
+    ring(t, 16, 1, cx, cy, 1400, COL.cream, 50);
+    if (t < 20) {
+      const k = easeOutExpo(prog(lt, 0, .35));
+      text('CLAUDE', cx, 1440, {
+        size: fitSize('CLAUDE', F.display, 900, 960, 240), scale: lerp(1.5, 1, k) * (1 + .05 * p),
+        chroma: (24 * (1 - prog(lt, 0, .5)) + 7 * p) * FX, glowC: hexA(COL.clay, .8), glowR: 40
+      });
+      const ka = easeOutCubic(prog(t, 18, .45));
+      text('od Anthropic', cx, 1610 + 24 * (1 - ka), { size: 96, font: F.serif, weight: 'italic 400', color: COL.peach, alpha: ka });
+    } else {
+      const WS = ['ZAPYTAJ', 'O', 'WSZYSTKO'], i = clamp(Math.floor((t - 20) / BEAT), 0, 2), w = WS[i];
+      const k = easeOutExpo(prog(t, 20 + i * BEAT, .25)), extra = t >= 21.5 ? 22 * (1 - prog(t, 21.5, .4)) : 0;
+      text(w, cx, 1480, {
+        size: fitSize(w, F.display, 900, 940, i === 1 ? 380 : 240), scale: lerp(1.5, 1, k) * (1 + .05 * p),
+        color: i === 1 ? COL.ember : COL.cream, chroma: ((1 - k) * 26 + 7 * p + extra) * FX,
+        glowC: hexA(COL.clay, .8), glowR: 40
+      });
+    }
+  }
+
+  function sceneOutro(t) {
+    const lt = t - 22, cx = W / 2;
+    bgRadial(COL.plum, 820, 1000, .8);
+    dust(t, 70, 9, .45);
+    const k = easeInOut(prog(t, 22, 1.4));
+    const R = lerp(300, 92, k) * (1 + .04 * Math.sin(t * 2.2)), cy = lerp(820, 780, k);
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(cx, cy, R * 4, COL.clay, .35 + .1 * Math.sin(t * 2.2)); ctx.restore();
+    burst(t, 22, 222, 120, cx, 820, 900, 3, PARTS);
+    spark(cx, cy, R, lt * .4 + 1.3);
+    const ka = easeOutCubic(prog(t, 22.6, .9));
+    text('zawsze tu jest.', cx, 1170 + 30 * (1 - ka), { size: 132, font: F.serif, weight: 'italic 400', color: COL.cream, alpha: ka });
+    const tl = TYPING[3];
+    if (t >= tl.t0 - .3) {
+      ctx.font = `500 46px ${F.mono}`;
+      const fw = ctx.measureText(tl.text).width, s = typed(t, tl);
+      monoLine(s, cx - fw / 2, 1340, COL.peach, 46, Math.floor(t * 2.6) % 2 === 0 || s.length < tl.text.length);
+    }
+    const fo = prog(t, 25.1, .9);
+    if (fo > 0) bgFill(`rgba(0,0,0,${fo})`);
+  }
+
+  function drawScene(t) {
+    if (t < 4) sceneIntro(t);
+    else if (t < 6) sceneDrop(t);
+    else if (t < 8) sceneCode(t);
+    else if (t < 10) sceneThink(t);
+    else if (t < 12) sceneLang(t);
+    else if (t < 14) sceneCreate(t);
+    else if (t < 16) sceneBuild(t);
+    else if (t < 22) sceneDrop2(t);
+    else sceneOutro(t);
+  }
+  function resetCtx() {
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; ctx.shadowBlur = 0;
+  }
+  function renderAt(t) {
+    t = clamp(t, 0, DURATION - 1e-4);
+    resetCtx();
+    ctx.fillStyle = COL.ink; ctx.fillRect(0, 0, W, H);
+    let sh = 0;
+    for (const [ti, a] of IMPACTS) if (t >= ti) sh += a * Math.exp(-(t - ti) * 7);
+    const groove = (t >= 4 && t < 15) || (t >= 16 && t < 22);
+    if (groove) sh += 5 * pulse(t, 14);
+    sh *= FX;
+    const r = rng(Math.floor(t * 60) + 3), z = groove ? 1 + .022 * pulse(t) * FX : 1;
+    ctx.translate(W / 2 + (r() - .5) * 2 * sh, H / 2 + (r() - .5) * 2 * sh);
+    ctx.scale(z, z); ctx.translate(-W / 2, -H / 2);
+    drawScene(t);
+    resetCtx();
+    for (const c of CUTS) {
+      const lt = t - c;
+      if (lt < 0 || lt >= .1) continue;
+      const g = rng(c * 13 + Math.floor(lt * 60));
+      for (let i = 0; i < 7; i++) {
+        const y = g() * H, h = 20 + g() * 140, dx = (g() - .5) * 120 * (1 - lt / .1) * FX;
+        ctx.drawImage(canvas, 0, y, W, h, dx, y, W, h);
+      }
+    }
+    let fl = 0;
+    for (const [ti, a, d] of FLASHES) if (t >= ti && t < ti + d) fl = Math.max(fl, a * (1 - prog(t, ti, d)) ** 2);
+    if (fl > 0) { ctx.fillStyle = hexA('#fff3e6', fl * (REDUCED ? .3 : 1)); ctx.fillRect(0, 0, W, H); }
+    ctx.fillStyle = vig; ctx.fillRect(0, 0, W, H);
+    const gr = rng(Math.floor(t * 12) + 1), ox = gr() * 512 | 0, oy = gr() * 512 | 0;
+    ctx.globalAlpha = .06; ctx.globalCompositeOperation = 'overlay';
+    for (let x = -ox; x < W; x += 512) for (let y = -oy; y < H; y += 512) ctx.drawImage(grain, x, y);
+    resetCtx();
+  }
+
+  // ---------- music: phonk-style beat, rendered offline so picture and sound share one clock ----------
+  async function renderAudio(sr = 44100) {
+    const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+    const ac = new OAC(2, Math.ceil(DURATION * sr), sr);
+    const r = rng(4242);
+    const master = ac.createGain(), comp = ac.createDynamicsCompressor();
+    comp.threshold.value = -14; comp.knee.value = 10; comp.ratio.value = 4; comp.attack.value = .003; comp.release.value = .2;
+    master.gain.setValueAtTime(.85, 0); master.gain.setValueAtTime(.85, 25); master.gain.linearRampToValueAtTime(0, DURATION);
+    const out = ac.createGain(); out.gain.value = .78;
+    master.connect(comp); comp.connect(out); out.connect(ac.destination);
+    const verb = ac.createConvolver(), ir = ac.createBuffer(2, sr * 2.4 | 0, sr);
+    for (let c = 0; c < 2; c++) {
+      const d = ir.getChannelData(c);
+      for (let i = 0; i < d.length; i++) d[i] = (r() * 2 - 1) * Math.pow(1 - i / d.length, 3.2);
+    }
+    verb.buffer = ir;
+    const vg = ac.createGain(); vg.gain.value = .3; verb.connect(vg); vg.connect(master);
+    const nb = ac.createBuffer(1, sr * 2, sr), nd = nb.getChannelData(0);
+    for (let i = 0; i < nd.length; i++) nd[i] = r() * 2 - 1;
+    const curve = new Float32Array(1024);
+    for (let i = 0; i < 1024; i++) { const x = i / 511.5 - 1; curve[i] = Math.tanh(2.6 * x) / Math.tanh(2.6); }
+    const send = (node, amt) => { const g = ac.createGain(); g.gain.value = amt; node.connect(g); g.connect(verb); };
+    const env = (g, t, v, a, d) => {
+      g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(v, t + a); g.gain.exponentialRampToValueAtTime(.0001, t + a + d);
+    };
+    function noise(t, dur, type, freq, v, q = 1, wet = 0) {
+      const s = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
+      s.buffer = nb; s.loop = true;
+      f.type = type; f.frequency.value = freq; f.Q.value = q;
+      env(g, t, v, .002, dur);
+      s.connect(f); f.connect(g); g.connect(master);
+      if (wet) send(g, wet);
+      s.start(t, r() * 1.5); s.stop(t + dur + .05);
+    }
+    function kick(t, v = 1) {
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.frequency.setValueAtTime(170, t); o.frequency.exponentialRampToValueAtTime(44, t + .12);
+      env(g, t, v, .003, .42); o.connect(g); g.connect(master); o.start(t); o.stop(t + .5);
+      noise(t, .015, 'highpass', 3500, .3 * v);
+    }
+    function clap(t, v = 1) {
+      for (let i = 0; i < 3; i++) noise(t + i * .011, .03, 'bandpass', 1400, .55 * v, .9);
+      noise(t + .033, .22, 'bandpass', 1300, .5 * v, .8, .45);
+    }
+    const hat = (t, v) => noise(t, .045, 'highpass', 7800, v, .7);
+    function snare(t, v) {
+      noise(t, .14, 'bandpass', 2100, .55 * v, .7, .2);
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = 'triangle'; o.frequency.setValueAtTime(220, t); o.frequency.exponentialRampToValueAtTime(160, t + .08);
+      env(g, t, .3 * v, .002, .09); o.connect(g); g.connect(master); o.start(t); o.stop(t + .12);
+    }
+    function bass(t, f, dur) {
+      const o = ac.createOscillator(), sh = ac.createWaveShaper(), lp = ac.createBiquadFilter(), g = ac.createGain();
+      o.frequency.setValueAtTime(f * 1.15, t); o.frequency.exponentialRampToValueAtTime(f, t + .05);
+      sh.curve = curve; lp.type = 'lowpass'; lp.frequency.value = 700;
+      g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.5, t + .006);
+      g.gain.setValueAtTime(.5, t + Math.max(.01, dur - .05)); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+      o.connect(sh); sh.connect(lp); lp.connect(g); g.connect(master); o.start(t); o.stop(t + dur + .02);
+    }
+    function bell(t, f, v = .16, dur = .3) {
+      const a = ac.createOscillator(), b = ac.createOscillator(), bp = ac.createBiquadFilter(), g = ac.createGain();
+      a.type = b.type = 'square'; a.frequency.value = f; b.frequency.value = f * 1.4823;
+      bp.type = 'bandpass'; bp.frequency.value = f * 2.1; bp.Q.value = .8;
+      g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(v, t + .003);
+      g.gain.exponentialRampToValueAtTime(v * .3, t + .06); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+      a.connect(bp); b.connect(bp); bp.connect(g); g.connect(master); send(g, .35);
+      a.start(t); b.start(t); a.stop(t + dur + .02); b.stop(t + dur + .02);
+    }
+    function pad(t, dur, freqs, v, att, rel, cut) {
+      const lp = ac.createBiquadFilter(), g = ac.createGain();
+      lp.type = 'lowpass'; lp.frequency.value = cut; lp.Q.value = .4;
+      g.gain.setValueAtTime(.0001, t); g.gain.linearRampToValueAtTime(v, t + att);
+      g.gain.setValueAtTime(v, t + dur - rel); g.gain.linearRampToValueAtTime(.0001, t + dur);
+      lp.connect(g); g.connect(master); send(g, .6);
+      for (const f of freqs) for (const det of [-7, 7]) {
+        const o = ac.createOscillator(); o.type = 'sawtooth'; o.frequency.value = f; o.detune.value = det;
+        o.connect(lp); o.start(t); o.stop(t + dur + .05);
+      }
+    }
+    function riser(t0, t1, v) {
+      const s = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
+      s.buffer = nb; s.loop = true;
+      f.type = 'bandpass'; f.Q.value = 1.8; f.frequency.setValueAtTime(300, t0); f.frequency.exponentialRampToValueAtTime(7000, t1);
+      g.gain.setValueAtTime(.0001, t0); g.gain.exponentialRampToValueAtTime(v, t1 - .02); g.gain.linearRampToValueAtTime(.0001, t1);
+      s.connect(f); f.connect(g); g.connect(master); send(g, .3); s.start(t0); s.stop(t1 + .05);
+      const o = ac.createOscillator(), og = ac.createGain();
+      o.frequency.setValueAtTime(180, t0); o.frequency.exponentialRampToValueAtTime(1500, t1);
+      og.gain.setValueAtTime(.0001, t0); og.gain.exponentialRampToValueAtTime(.07, t1 - .02); og.gain.linearRampToValueAtTime(.0001, t1);
+      o.connect(og); og.connect(master); o.start(t0); o.stop(t1 + .05);
+    }
+    function impact(t, v) {
+      const o = ac.createOscillator(), sh = ac.createWaveShaper(), g = ac.createGain();
+      o.frequency.setValueAtTime(120, t); o.frequency.exponentialRampToValueAtTime(28, t + 1.1); sh.curve = curve;
+      env(g, t, .9 * v, .004, 1.6); o.connect(sh); sh.connect(g); g.connect(master); o.start(t); o.stop(t + 1.7);
+      noise(t, 1.8, 'highpass', 2600, .22 * v, .5, .5);
+      noise(t, .45, 'lowpass', 220, .6 * v, .7);
+    }
+    const tick = t => noise(t, .018, 'bandpass', 2400 + r() * 2600, .2, 1.4);
+    const n5 = s => 587.33 * Math.pow(2, s / 12), n4 = s => n5(s) / 2, S16 = BEAT / 4;
+
+    pad(0, 3.72, [146.83, 174.61, 220, 329.63], .045, 1.2, .25, 900);
+    for (const s of TYPING) for (let k = 1; k <= s.text.length; k++) if (s.text[k - 1] !== ' ') tick(s.t0 + k / s.cps);
+    riser(2.3, 3.75, .32);
+    impact(4, 1); impact(16, 1.1); impact(22, .8);
+    noise(21.5, 1.2, 'highpass', 3000, .25, .5, .5);
+    for (let b = 8; b < 44; b++) {
+      const t = b * BEAT;
+      if (t >= 15 && t < 16) continue;
+      kick(t, b === 8 || b === 32 ? 1.1 : .95);
+      if (t < 14 || t >= 16) {
+        if (b % 2) clap(t);
+        hat(t + BEAT * .25, .08); hat(t + BEAT * .5, .2);
+        if (b % 4 === 3) hat(t + BEAT * .75, .12);
+      }
+    }
+    for (let t = 14; t < 15.75 - 1e-6;) {
+      snare(t, .35 + .65 * (t - 14) / 1.75);
+      t += t < 14.75 - 1e-6 ? .25 : t < 15.25 - 1e-6 ? .125 : .0625;
+    }
+    riser(14, 15.75, .35);
+    const CH = [[73.42, [0, 3, 7]], [58.27, [-4, 0, 3]], [65.41, [-2, 2, 5]], [55.0, [-5, -1, 2]]];
+    for (const bt of [4, 6, 8, 10, 12, 14, 16, 18, 20]) {
+      const [root, [a, b2, c]] = CH[((bt - 4) / 2) % 4], half = bt === 14;
+      for (const [st, len] of [[0, 5], [6, 2], [10, 6]]) if (!half || st < 8) bass(bt + st * S16, root, len * S16);
+      const seq = [a, b2, c, a + 12, c, b2];
+      [0, 3, 6, 8, 10, 13].forEach((st, i) => { if (!half || st < 8) bell(bt + st * S16, n5(seq[i])); });
+      if (bt >= 16) pad(bt, .5, [a, b2, c].map(n4), .07, .01, .3, 2600);
+    }
+    pad(22, 4, [146.83, 220, 293.66, 349.23], .05, .3, 2.2, 1000);
+    bell(22, n5(0), .18, 1.4); bell(22.75, n5(7), .1, 1.2); bell(23.5, n5(3), .08, 1.4);
+    return ac.startRendering();
+  }
+
+  window.__edit = { renderAt, renderAudio, DURATION, ready: false };
+
+  // ---------- player ----------
+  const $ = s => document.querySelector(s);
+  const playerEl = $('#player'), cover = $('#cover'), bigPlay = $('#bigplay'), bigLabel = $('#biglabel');
+  const btnPlay = $('#btn-play'), btnRestart = $('#btn-restart'), btnMute = $('#btn-mute'), btnFull = $('#btn-full');
+  const scrub = $('#scrub'), timeEl = $('#time'), cueList = $('#cues');
+  if (!playerEl) { window.__edit.ready = true; return; }
+  const fmt = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+  const cueBtns = SCENES.map(s => {
+    const li = document.createElement('li'), b = document.createElement('button');
+    li.className = 'cue'; b.type = 'button';
+    b.innerHTML = `<span class="tc">${fmt(s.t)}</span><span class="nm">${s.name}</span><span class="nt">${s.note}</span>`;
+    b.addEventListener('click', e => { e.stopPropagation(); start(s.t); });
+    li.appendChild(b); cueList.appendChild(li);
+    return b;
+  });
+
+  let actx = null, abuf = null, src = null, gainN = null, audioJob = null;
+  let playing = false, started = false, muted = false, scrubbing = false, startAt = 0, pos = 0, raf = 0, activeCue = -1;
+  let clock = () => performance.now() / 1000;
+  const now = () => playing ? (((clock() - startAt) % DURATION) + DURATION) % DURATION : pos;
+
+  function stopSrc() {
+    if (!src) return;
+    try { src.stop(); } catch (e) { /* already stopped */ }
+    src.disconnect(); src = null;
+  }
+  function playFrom(off) {
+    stopSrc();
+    off = ((off % DURATION) + DURATION) % DURATION;
+    if (actx && abuf) {
+      if (!gainN) { gainN = actx.createGain(); gainN.connect(actx.destination); }
+      gainN.gain.value = muted ? 0 : 1;
+      src = actx.createBufferSource(); src.buffer = abuf; src.loop = true; src.connect(gainN);
+      src.start(0, off);
+    }
+    clock = actx && abuf && actx.state === 'running' ? () => actx.currentTime : () => performance.now() / 1000;
+    startAt = clock() - off;
+    playing = true; started = true; cover.hidden = true;
+    syncButtons();
+    if (!raf) raf = requestAnimationFrame(loop);
+  }
+  async function start(off = pos) {
+    if (!actx) {
+      try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { actx = null; }
+    }
+    if (actx && actx.state === 'suspended') actx.resume().catch(() => {});
+    if (actx && !abuf) {
+      if (!audioJob) audioJob = renderAudio(actx.sampleRate).then(b => { abuf = b; }).catch(e => console.warn('audio', e));
+      bigPlay.disabled = true; bigLabel.textContent = 'Miksuję dźwięk…';
+      await audioJob;
+      bigPlay.disabled = false; bigLabel.textContent = 'Odtwórz z dźwiękiem';
+      if (actx.state === 'suspended') await actx.resume().catch(() => {});
+    }
+    playFrom(off);
+  }
+  function pause() {
+    pos = now(); stopSrc(); playing = false;
+    syncButtons(); renderAt(pos); syncProgress(pos);
+  }
+  const toggle = () => playing ? pause() : start(started ? pos : 0);
+  function seek(t) {
+    if (playing) playFrom(t);
+    else { pos = t; started = true; cover.hidden = true; renderAt(t); syncProgress(t); }
+  }
+  function loop() {
+    raf = 0;
+    if (!playing) return;
+    const t = now();
+    renderAt(t); syncProgress(t);
+    raf = requestAnimationFrame(loop);
+  }
+  function syncButtons() {
+    $('#ico-play').hidden = playing; $('#ico-pause').hidden = !playing;
+    btnPlay.setAttribute('aria-label', playing ? 'Pauza' : 'Odtwórz');
+    $('#ico-vol').hidden = muted; $('#ico-muted').hidden = !muted;
+    btnMute.setAttribute('aria-pressed', String(muted));
+    btnMute.setAttribute('aria-label', muted ? 'Włącz dźwięk' : 'Wycisz');
+  }
+  function syncProgress(t) {
+    if (!scrubbing) scrub.value = t.toFixed(2);
+    timeEl.textContent = `${fmt(t)} / ${fmt(DURATION)}`;
+    let idx = 0;
+    SCENES.forEach((s, i) => { if (t >= s.t) idx = i; });
+    if (idx !== activeCue) {
+      if (activeCue >= 0) cueBtns[activeCue].removeAttribute('aria-current');
+      cueBtns[idx].setAttribute('aria-current', 'true');
+      activeCue = idx;
+    }
+  }
+
+  bigPlay.addEventListener('click', e => { e.stopPropagation(); start(0); });
+  playerEl.addEventListener('click', () => toggle());
+  btnPlay.addEventListener('click', toggle);
+  btnRestart.addEventListener('click', () => start(0));
+  btnMute.addEventListener('click', () => { muted = !muted; if (gainN) gainN.gain.value = muted ? 0 : 1; syncButtons(); });
+  if (!playerEl.requestFullscreen) btnFull.hidden = true;
+  btnFull.addEventListener('click', () => {
+    const p = document.fullscreenElement ? document.exitFullscreen() : playerEl.requestFullscreen();
+    if (p && p.catch) p.catch(() => {});
+  });
+  scrub.addEventListener('pointerdown', () => { scrubbing = true; });
+  scrub.addEventListener('pointerup', () => { scrubbing = false; });
+  scrub.addEventListener('change', () => { scrubbing = false; });
+  scrub.addEventListener('input', () => seek(parseFloat(scrub.value)));
+  document.addEventListener('keydown', e => {
+    if (e.code !== 'Space' || e.target.closest('button, input')) return;
+    e.preventDefault(); toggle();
+  });
+
+  renderAt(POSTER_T); syncProgress(0); syncButtons();
+  const fontJobs = [
+    ['900 100px Unbounded', 'CLAUDE ŚĆĘÓŁ'], ['italic 400 100px "Instrument Serif"', 'zawsze cześć olá'],
+    ['500 40px "JetBrains Mono"', '> hej ść ɔː'], ['700 40px "JetBrains Mono"', 'PASS']
+  ].map(([f, s]) => document.fonts.load(f, s));
+  Promise.race([Promise.all(fontJobs), new Promise(res => setTimeout(res, 4000))]).catch(() => {}).then(() => {
+    if (!started) renderAt(POSTER_T); else if (!playing) renderAt(pos);
+    window.__edit.ready = true;
+  });
+})();
+</script>

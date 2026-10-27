@@ -626,7 +626,7 @@ void main() {
   col = mix(col, vec3(1.0) - col, uInvert);
   vec2 q = vUv - 0.5;
   col *= 1.0 - uVignette * dot(q * vec2(1.0, 0.72), q * vec2(1.0, 0.72)) * 2.0;
-  float g = hash12(vUv * uRes + fract(uTime * 7.31) * 113.0) - 0.5;
+  float g = noise2(vUv * uRes * 0.5 + floor(uTime * 12.0) * 71.3) - 0.5;
   col += g * uGrain * (0.55 + 0.45 * (1.0 - l));
   col *= 1.0 - uFade;
   oCol = vec4(pow(clamp(col, 0.0, 1.0), vec3(1.0 / 2.2)), 1.0);
@@ -995,7 +995,7 @@ void main() {
       post: {
         exposure: 1, flash: 0, bloom: 0.85, streak: 0.2, ca: 0.0012, zoomBlur: 0, zoomCenter: [0.5, 0.5], whip: [0, 0],
         shake: [0, 0], shakeRot: 0, distort: 0, kaleido: 0, glitch: 0, leak: 0, invert: 0, sat: 1.05, contrast: 1.05,
-        vignette: 0.6, grain: 0.05, fade: 0, zoom: 1,
+        vignette: 0.6, grain: 0.045, fade: 0, zoom: 1,
       },
     };
   }
@@ -1004,7 +1004,7 @@ void main() {
 
   function shotIntro(F, t) {
     const k = E.inOut(clamp(t / TB(8)));
-    F.cam = { pos: orbit(lerp(2.2, 4.4, k), lerp(0.95, 0.55, k), lerp(0.18, 0.08, k)), target: V.lerp([0.3, 0.3, 0], [0, -0.2, 0], k), roll: 0.06 - 0.06 * k, fov: 28 };
+    F.cam = { pos: orbit(lerp(4.2, 6.6, k), lerp(0.95, 0.42, k), lerp(0.2, 0.1, k)), target: V.lerp([0.15, 0.25, 0], [0, -0.3, 0], k), roll: 0.06 - 0.06 * k, fov: 28 };
     F.spark.keyCol = V.mul([1.6, 1.5, 1.38], lerp(0.08, 0.7, k));
     const hb = pulse(EV.heart, t, 7);
     Object.assign(F.spark, { energy: 0.12 + 0.35 * hb, pulse: since(EV.heart, t) * 2.2, core: 0.22 + 0.25 * hb, glow: 0.25 + 0.2 * hb, yaw: 0.25 + t * 0.05,
@@ -1041,10 +1041,10 @@ void main() {
 
   function shotBuild(F, t) {
     const lt = t - TB(8), k = clamp(lt / TB(3.5));
-    F.cam = { pos: orbit(lerp(4.4, 8.4, E.inOut(k)), lerp(0.55, 0, E.inOut(k)), lerp(0.08, 0.03, k)), target: V.lerp([0, -0.2, 0], [0, -0.42, 0], k), roll: 0.04 * Math.sin(lt * 2), fov: 30 };
+    F.cam = { pos: orbit(lerp(6.6, 8.6, E.inOut(k)), lerp(0.42, 0, E.inOut(k)), lerp(0.1, 0.03, k)), target: V.lerp([0, -0.3, 0], [0, -0.42, 0], k), roll: 0.04 * Math.sin(lt * 2), fov: 30 };
     F.spark.keyCol = V.mul([1.6, 1.5, 1.38], lerp(0.7, 1, k));
     const phase = lt * 1.3 + lt * lt * 1.5;
-    Object.assign(F.spark, { yaw: 0.3 + lt * 0.6 + Math.pow(lt, 3) * 0.55, extend: 1 - 0.12 * E.inCubic(k), energy: 0.3 + 0.9 * k,
+    Object.assign(F.spark, { yaw: 0.42 * (1 - lt / TB(3.5)) + Math.pow(lt, 3) * 0.12, extend: 1 - 0.12 * E.inCubic(k), energy: 0.3 + 0.9 * k,
       pulse: (phase % 1) * 1.3, core: 0.3 + 1.6 * k * k, glow: 0.3 + 0.9 * k });
     F.dof = { focus: camFocus(F.cam), aperture: lerp(10, 5, k), maxR: 16 };
     F.particles = dust({ focus: camFocus(F.cam), turb: 1 + 3 * k, bright: 0.28 + 0.3 * k });
@@ -1079,7 +1079,7 @@ void main() {
   function shotDrop(F, t) {
     const lt = t - TB(12), kp = pulse(EV.kick, t, 8);
     F.cam = { pos: orbit(8.6 - 0.8 * E.outCubic(clamp(lt / TB(4))), 0.05 * Math.sin(lt), 0.06), target: [0, -0.45, 0], roll: -0.03, fov: 30 };
-    Object.assign(F.spark, { yaw: 1.2 + 7 * (1 - Math.exp(-lt * 3.2)), pitch: 0.1 * Math.sin(lt * 1.3), extend: 1 + 0.2 * Math.exp(-lt * 6),
+    Object.assign(F.spark, { yaw: 4 * Math.PI * (1 - Math.exp(-lt * 3.2)), pitch: 0.1 * Math.sin(lt * 1.3), extend: 1 + 0.2 * Math.exp(-lt * 6),
       energy: 0.3 + 1.0 * kp, pulse: since(EV.kick, t) * 2.8, core: 0.5 + 0.5 * kp, glow: 0.6 + 0.3 * kp });
     F.particles = sparkBurst(TB(12), t, { focus: 8 });
     F.mb = lt < 0.4 ? 3 : 1;
@@ -1197,14 +1197,16 @@ void main() {
     const travel = lt * 0.45 + 3.2 * Math.pow(b40, 2.3);
     F.cam = { pos: [0.3 * Math.sin(lt * 0.3), 0.15, 6 - travel], target: [0.3 * Math.sin(lt * 0.3) + 0.05, 0.12, 5 - travel], roll: 0.05 * Math.sin(lt * 0.5) + 0.4 * k * k, fov: lerp(40, 52, k) };
     const kp = pulse(EV.kick, t, 6);
-    Object.assign(F.spark, { repeat: 2.6, fogDen: 0.085, fogCol: [0.008, 0.006, 0.01], shadow: 0, spin: t, energy: 0.3 + 0.6 * kp + 0.6 * k, pulse: since(EV.kick, t) * 2.2, core: 0.4 + 0.5 * k, glow: 0.6 });
+    Object.assign(F.spark, { repeat: 2.6, fogDen: 0.085 + 0.12 * k, fogCol: [0.008, 0.006, 0.01], shadow: 0, spin: t, energy: (0.3 + 0.6 * kp) * (1 - 0.6 * k), pulse: since(EV.kick, t) * 2.2, core: 0.4 * (1 - 0.75 * k), glow: 0.6 * (1 - 0.7 * k) });
     F.bg = { tint: [0.02, 0.014, 0.02], glow: 0.3, center: [0, 0] };
     F.dof = { focus: 2.2, aperture: lerp(14, 4, k), maxR: 18 };
     const sp = pulse(EV.snare, t, 14);
     F.post.ca = 0.002 + 0.016 * k;
     F.post.zoomBlur = 0.08 * E.inCubic(k);
-    F.post.exposure = (1 + 0.2 * sp * k) * (1 - 0.35 * E.inCubic(k));
+    F.post.exposure = (1 + 0.15 * sp * k) * (1 - 0.8 * E.inCubic(k));
     F.post.glitch = 0.3 * k * sp;
+    F.post.bloom = 1.0 - 0.65 * k;
+    F.post.exposure *= 1 - E.inCubic(prog(t, TB(42.4), TB(1.1)));
     F.overlay = g => {
       const M = [['HAIKU', 'szybki.', 36], ['SONNET', 'zbalansowany.', 38], ['OPUS', 'najmocniejszy.', 40]];
       const j = lt < TB(2) ? 0 : lt < TB(4) ? 1 : 2, [name, desc, b0] = M[j], l = t - TB(b0);
@@ -1219,15 +1221,16 @@ void main() {
     const lt = t - TB(44), kp = pulse(EV.kick, t, 8);
     if (lt < BEAT) {
       F.cam = { pos: [0, 0, 2.4], target: [0.2, 0.2, 0], roll: lt * 0.8, fov: 36 };
-      Object.assign(F.spark, { yaw: lt * 2.5, roll: lt * 1.5, energy: 1.0, pulse: lt * 3, core: 0.8, glow: 0.7, extend: 1.12 });
+      Object.assign(F.spark, { yaw: lt * 2.5, roll: lt * 1.5, energy: 0.7, pulse: lt * 3, core: 0.45, glow: 0.5, extend: 1.12 });
       F.post.kaleido = 6;
       F.post.bloom = 1.2;
+      F.post.exposure = 0.25 + 0.6 * clamp(lt / 0.3);
       F.mb = 2;
       return;
     }
     const l2 = lt - BEAT;
     F.cam = { pos: orbit(8.4, 0.35 * Math.sin(l2 * 0.8) - 0.2, 0.1), target: [0, -0.45, 0], roll: 0.04, fov: 30 };
-    Object.assign(F.spark, { yaw: 2 + 5 * (1 - Math.exp(-l2 * 3)), energy: 0.4 + 1.0 * kp, pulse: since(EV.kick, t) * 2.8, core: 0.6 + 0.5 * kp, glow: 0.7 + 0.3 * kp, extend: 1 + 0.15 * Math.exp(-l2 * 5) });
+    Object.assign(F.spark, { yaw: 4 * Math.PI * (1 - Math.exp(-l2 * 3)), energy: 0.4 + 1.0 * kp, pulse: since(EV.kick, t) * 2.8, core: 0.6 + 0.5 * kp, glow: 0.7 + 0.3 * kp, extend: 1 + 0.15 * Math.exp(-l2 * 5) });
     F.particles = sparkBurst(TB(45), t, { focus: 8.4, dist: 4.2 });
     const k = E.outExpo(prog(l2, 0, 0.2));
     F.sdf.push({ word: 'CLAUDE', cx: 540, cy: 1470, width: 980 * lerp(2.1, 1, k) * (1 + 0.035 * kp), angle: 0.05 - 0.09 * k, style: 0, shine: lerp(-0.4, 1.4, prog(l2, TB(1.1), 0.6)), steps: 26 });
@@ -1264,7 +1267,7 @@ void main() {
       F.dof = { focus: camFocus(F.cam), aperture: 8, maxR: 16 };
     } else {
       F.cam = { pos: orbit(8.4, 0.2, 0.08), target: [0, -0.45, 0], roll: -0.04, fov: 30 };
-      Object.assign(F.spark, { yaw: t * 1.2, energy: 0.4 + 0.9 * kp, pulse: ll * 2.8, core: 0.6, glow: 0.7 });
+      Object.assign(F.spark, { yaw: 2 * Math.PI * E.outCubic(clamp(ll / BEAT)), energy: 0.4 + 0.9 * kp, pulse: ll * 2.8, core: 0.6, glow: 0.7 });
     }
     const k = E.outExpo(clamp(ll / 0.18));
     F.sdf.push({ word: words[i], cx: 540, cy: i === 3 ? 1460 : 960, width: (i === 3 ? 960 : 900) * lerp(1.45, 1, k), angle: 0, style: i === 1 ? 1 : 0, shine: lerp(-0.3, 1.3, clamp(ll / BEAT)) });
@@ -1335,11 +1338,11 @@ void main() {
 
   function shotOutro(F, t) {
     const lt = t - TB(68);
-    F.cam = { pos: V.lerp([0, 0.3, 9.4], [0, 0.25, 8.8], E.outCubic(clamp(lt / 3))), target: [0, -0.5, 0], roll: 0, fov: 30 };
-    Object.assign(F.spark, { yaw: 0.6 + lt * 0.25, energy: 0.3 + 0.15 * Math.sin(lt * 2.4), pulse: (lt * 0.6) % 1.3, core: 0.45, glow: 0.6 });
-    F.particles = dust({ focus: 9, bright: 0.26 });
+    F.cam = { pos: V.lerp([0, 0.26, 7.0], [0, 0.22, 6.5], E.outCubic(clamp(lt / 3))), target: [0, -0.55, 0], roll: 0, fov: 30 };
+    Object.assign(F.spark, { yaw: 0.2 * Math.sin(lt * 0.45), pitch: 0.12, energy: 0.22 + 0.12 * Math.sin(lt * 2.4), pulse: (lt * 0.6) % 1.3, core: 0.16, glow: 0.3, keyCol: [2.4, 2.25, 2.05] });
+    F.particles = dust({ focus: 6.7, bright: 0.26 });
     F.sdf.push({ word: 'CLAUDE', cx: 540, cy: 1365, width: 860, angle: 0, style: 0, shine: lerp(-0.4, 1.4, prog(lt, 0.9, 1.0)), steps: 22 });
-    F.post.bloom = 0.9; F.post.streak = 0.3;
+    F.post.bloom = 0.8; F.post.streak = 0.3; F.post.exposure = 1.1;
     F.post.fade = E.inOut(prog(t, TB(72.4), TB(74) - TB(72.4) - 0.05));
     F.overlay = g => {
       const a = E.outCubic(prog(lt, 0.6, 0.6));
@@ -1358,7 +1361,7 @@ void main() {
     let shake = 0;
     for (const ti of EV.impact) if (t >= ti) {
       const d = t - ti;
-      F.post.flash += 0.95 * Math.exp(-d * 10);
+      F.post.flash += 0.5 * Math.exp(-d * 16);
       shake += 0.03 * Math.exp(-d * 5.5);
       F.post.ca += 0.02 * Math.exp(-d * 6);
       F.post.zoomBlur += 0.2 * Math.exp(-d * 9);

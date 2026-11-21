@@ -12,6 +12,7 @@ import com.ziemniak.client.config.Options.ParticleKind;
 import com.ziemniak.client.config.ZiemniakConfig;
 import com.ziemniak.client.hud.HudEditorScreen;
 import com.ziemniak.client.screen.ZiemniakMenuScreen;
+import com.ziemniak.client.sound.Sounds;
 import com.ziemniak.client.theme.Palettes.Colors;
 
 import net.minecraft.client.MinecraftClient;
@@ -54,6 +55,7 @@ public final class FemboyTheme {
 
 	private static final class HoverState {
 		float progress;
+		boolean was;
 		long last = now();
 	}
 
@@ -547,6 +549,8 @@ public final class FemboyTheme {
 		float dt = Math.min(0.1f, (now - st.last) / 1000f);
 		st.last = now;
 		float target = (hovered && active) ? 1f : 0f;
+		if (target > 0f && !st.was) Sounds.play(Sounds.Sfx.HOVER);
+		st.was = target > 0f;
 		st.progress += (target - st.progress) * clamp01(dt * 14f);
 		float hp = st.progress;
 
@@ -644,6 +648,8 @@ public final class FemboyTheme {
 		long now = now();
 		float dt = Math.min(0.1f, (now - st.last) / 1000f);
 		st.last = now;
+		if (hovered && active && !st.was) Sounds.play(Sounds.Sfx.HOVER);
+		st.was = hovered && active;
 		st.progress += ((hovered && active ? 1f : 0f) - st.progress) * clamp01(dt * 14f);
 		float hp = st.progress;
 		int x1 = w.getX(), y1 = w.getY(), x2 = x1 + w.getWidth(), y2 = y1 + w.getHeight();
@@ -813,10 +819,15 @@ public final class FemboyTheme {
 	}
 
 	public static void addBurst(double x, double y) {
+		addBurst(x, y, true);
+	}
+
+	public static void addBurst(double x, double y, boolean sound) {
 		Options.ClickEffect kind = cfg().clickEffect;
 		if (kind == Options.ClickEffect.BRAK) return;
 		long n = now();
 		BURSTS.add(new Burst(x, y, n, kind, (int) (n & 0xFFFF)));
 		if (BURSTS.size() > 20) BURSTS.remove(0);
+		if (sound) Sounds.clickEffect(kind);
 	}
 }

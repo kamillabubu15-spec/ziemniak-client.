@@ -3,6 +3,7 @@ package com.ziemniak.client.hud;
 import com.ziemniak.client.config.ZiemniakConfig;
 import com.ziemniak.client.config.ZiemniakConfig.HudPos;
 import com.ziemniak.client.hud.HudManager.Module;
+import com.ziemniak.client.sound.Sounds;
 import com.ziemniak.client.theme.FemboyTheme;
 import com.ziemniak.client.theme.Palettes.Colors;
 import com.ziemniak.client.theme.Shapes;
@@ -68,6 +69,7 @@ public class HudEditorScreen extends Screen {
 			int[] r = HudManager.rect(m, client);
 			if (mouseX >= r[0] && mouseX < r[0] + r[2] && mouseY >= r[1] && mouseY < r[1] + r[3]) {
 				dragging = m;
+				Sounds.play(Sounds.Sfx.HUD_PICK);
 				offX = mouseX - r[0];
 				offY = mouseY - r[1];
 				return true;
@@ -96,6 +98,7 @@ public class HudEditorScreen extends Screen {
 	public boolean mouseReleased(double mouseX, double mouseY, int button) {
 		if (dragging != null) {
 			dragging = null;
+			Sounds.play(Sounds.Sfx.HUD_DROP);
 			ZiemniakConfig.save();
 			return true;
 		}

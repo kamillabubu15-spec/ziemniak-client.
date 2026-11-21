@@ -4,6 +4,7 @@
   "package": "com.ziemniak.client.mixin",
   "compatibilityLevel": "JAVA_21",
   "client": [
+    "ClickableWidgetMixin",
     "GameRendererMixin",
     "HandledScreenMixin",
     "InGameHudMixin",

@@ -77,6 +77,17 @@ public class ZiemniakConfig {
 		}
 	}
 
+	// ---------------------------------------------------------------- dzwieki
+	public boolean soundsEnabled = true;
+	public Options.SoundPack soundPack = Options.SoundPack.KAWAII;
+	public Options.SoundVolume soundVolume = Options.SoundVolume.V75;
+	public boolean soundUi = true;
+	public boolean soundInventory = true;
+	public boolean soundEffects = true;
+	public boolean soundGame = true;
+	public boolean soundShaders = true;
+	public boolean menuMusic = true;
+
 	// ---------------------------------------------------------------- narzedzia
 	public boolean zoomEnabled = true;
 	public boolean zoomSmooth = true;
@@ -136,5 +147,7 @@ public class ZiemniakConfig {
 		if (hud == null) hud = new LinkedHashMap<>();
 		if (zoomLevel == null) zoomLevel = Options.ZoomLevel.X4;
 		if (crosshair == null) crosshair = Options.Crosshair.VANILLA;
+		if (soundPack == null) soundPack = Options.SoundPack.KAWAII;
+		if (soundVolume == null) soundVolume = Options.SoundVolume.V75;
 	}
 }

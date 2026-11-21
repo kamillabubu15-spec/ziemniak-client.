@@ -15,6 +15,7 @@ import com.ziemniak.client.config.ZiemniakConfig;
 import com.ziemniak.client.hud.HudEditorScreen;
 import com.ziemniak.client.hud.HudManager;
 import com.ziemniak.client.shader.ShaderManager;
+import com.ziemniak.client.sound.Sounds;
 import com.ziemniak.client.shader.ShaderManager.NetShader;
 import com.ziemniak.client.shader.ShaderManager.OwnShader;
 import com.ziemniak.client.shader.ShaderManager.State;
@@ -35,7 +36,7 @@ import net.minecraft.util.Util;
 
 /** Menu moda: Shadery / Motyw / Animacje / Kursor i klik / Info. */
 public class ZiemniakMenuScreen extends Screen {
-	private static final String[] TABS = {"Shadery", "Motyw", "Animacje", "Kursor i klik", "HUD", "Narzedzia", "Info"};
+	private static final String[] TABS = {"Shadery", "Motyw", "Animacje", "Kursor i klik", "HUD", "Narzedzia", "Dzwieki", "Info"};
 	private static int lastTab = 0;
 
 	private final Screen parent;
@@ -79,7 +80,8 @@ public class ZiemniakMenuScreen extends Screen {
 		for (int i = 0; i < TABS.length; i++) {
 			final int idx = i;
 			ButtonWidget b = ButtonWidget.builder(Text.literal(TABS[i]), btn -> switchTab(idx))
-					.dimensions(10, areaY0 + i * 23, sideW, 19).build();
+					.dimensions(10, areaY0 + i * 21, sideW, 18).build();
+			Sounds.silence(b);
 			tabButtons.add(addDrawableChild(b));
 			labels.put(b, () -> (tab == idx ? "♥ " : "") + TABS[idx]);
 		}
@@ -93,6 +95,7 @@ public class ZiemniakMenuScreen extends Screen {
 		if (idx == tab) return;
 		tab = idx;
 		lastTab = idx;
+		Sounds.play(Sounds.Sfx.TAB);
 		buildTab();
 	}
 
@@ -111,6 +114,7 @@ public class ZiemniakMenuScreen extends Screen {
 			case 3 -> buildCursor();
 			case 4 -> buildHud();
 			case 5 -> buildTools();
+			case 6 -> buildSounds();
 			default -> buildInfo();
 		}
 		layout();
@@ -173,11 +177,19 @@ public class ZiemniakMenuScreen extends Screen {
 	}
 
 	private ButtonWidget toggle(String label, Function<ZiemniakConfig, Boolean> get, BiConsumer<ZiemniakConfig, Boolean> set) {
-		return button(() -> label + ": " + (get.apply(ZiemniakConfig.get()) ? "TAK" : "NIE"), () -> {
+		return silent(button(() -> label + ": " + (get.apply(ZiemniakConfig.get()) ? "TAK" : "NIE"), () -> {
 			ZiemniakConfig c = ZiemniakConfig.get();
-			set.accept(c, !get.apply(c));
+			boolean v = !get.apply(c);
+			set.accept(c, v);
 			ZiemniakConfig.save();
-		});
+			Sounds.play(v ? Sounds.Sfx.TOGGLE_ON : Sounds.Sfx.TOGGLE_OFF);
+		}));
+	}
+
+	/** Przycisk z wlasnym dzwiekiem (bez zwyklego klikniecia). */
+	private ButtonWidget silent(ButtonWidget b) {
+		Sounds.silence(b);
+		return b;
 	}
 
 	private <E extends Enum<E> & Options.Named> ButtonWidget cycle(String label, Function<ZiemniakConfig, E> get,
@@ -199,8 +211,8 @@ public class ZiemniakMenuScreen extends Screen {
 
 		header("Moje shadery (dzialaja od razu, bez Iris)");
 		for (OwnShader s : ShaderManager.OWN) {
-			buttonWithSide(button(() -> (s.id().equals(ZiemniakConfig.get().shader) ? "♥ " : "") + s.label(),
-					() -> ShaderManager.select(s.id())), s::desc);
+			buttonWithSide(silent(button(() -> (s.id().equals(ZiemniakConfig.get().shader) ? "♥ " : "") + s.label(),
+					() -> ShaderManager.select(s.id()))), s::desc);
 		}
 		text(() -> client.world == null ? "Wejdz do swiata, zeby zobaczyc shader." : "Shader dziala na swiat, menu zostaje bez zmian.", 0xFFE0F2);
 
@@ -213,17 +225,17 @@ public class ZiemniakMenuScreen extends Screen {
 			buttons(button(() -> "Menu Iris", () -> {
 				Screen s = ShaderManager.irisScreen(this);
 				if (s != null) client.setScreen(s);
-			}), button(() -> "Wylacz shader Iris", ShaderManager::irisDisable));
+			}), silent(button(() -> "Wylacz shader Iris", ShaderManager::irisDisable)));
 		} else {
 			Status iris = ShaderManager.status("iris");
-			buttonWithSide(button(() -> switch (iris.state) {
+			buttonWithSide(silent(button(() -> switch (iris.state) {
 				case POBIERANIE -> "Pobieranie " + Math.round(iris.progress * 100) + "%";
 				case GOTOWE -> "Pobrano ✔";
 				case BLAD -> "Blad - ponow";
 				default -> ShaderManager.irisPendingRestart() ? "Pobrano ✔" : "Pobierz Iris + Sodium";
 			}, () -> {
 				if (iris.state != State.GOTOWE && !ShaderManager.irisPendingRestart()) ShaderManager.installIris();
-			}), () -> switch (iris.state) {
+			})), () -> switch (iris.state) {
 				case GOTOWE -> "Zrestartuj gre, zeby wlaczyc Iris";
 				case BLAD -> "Blad: " + iris.error;
 				default -> ShaderManager.irisPendingRestart() ? "Zrestartuj gre, zeby wlaczyc Iris" : "Potrzebny do shaderow z netu";
@@ -236,7 +248,7 @@ public class ZiemniakMenuScreen extends Screen {
 			for (NetShader s : ShaderManager.NET) {
 				if (s.tier() != tier) continue;
 				Status st = ShaderManager.shaderStatus(s);
-				buttonWithSide(button(() -> switch (st.state) {
+				buttonWithSide(silent(button(() -> switch (st.state) {
 					case POBIERANIE -> Math.round(st.progress * 100) + "%";
 					case GOTOWE -> !ShaderManager.irisLoaded() ? "Pobrano ✔"
 							: (st.file != null && st.file.equals(ShaderManager.irisActivePack()) ? "♥ Wlaczony" : "Wlacz");
@@ -247,13 +259,13 @@ public class ZiemniakMenuScreen extends Screen {
 						case BRAK, BLAD -> ShaderManager.downloadShader(s);
 						case GOTOWE -> {
 							if (ShaderManager.irisLoaded() && st.file != null) {
-								ShaderManager.select("brak");
+								ShaderManager.select("brak", false);
 								ShaderManager.irisApply(st.file);
 							}
 						}
 						default -> { }
 					}
-				}), () -> s.name() + " - " + (st.state == State.BLAD ? "blad: " + st.error : s.desc()));
+				})), () -> s.name() + " - " + (st.state == State.BLAD ? "blad: " + st.error : s.desc()));
 			}
 		}
 		buttons(button(() -> "Otworz folder shaderpacks", () -> {
@@ -276,10 +288,12 @@ public class ZiemniakMenuScreen extends Screen {
 		buttons(cycle("Ekwipunek", c -> c.inventoryOpen, (c, v) -> c.inventoryOpen = v));
 		buttons(toggle("Ekran glowny", c -> c.themeTitleScreen, (c, v) -> c.themeTitleScreen = v),
 				toggle("Wszystkie menu", c -> c.themeAllMenus, (c, v) -> c.themeAllMenus = v));
-		buttons(button(() -> "✨ Losuj wszystko!", this::randomize), button(() -> "Reset", () -> {
+		buttons(silent(button(() -> "✨ Losuj wszystko!", this::randomize)), silent(button(() -> "Reset", () -> {
 			ZiemniakConfig.reset();
 			FemboyTheme.resetOpened(this);
-		}));
+			Sounds.restartMusic();
+			Sounds.play(Sounds.Sfx.RESET);
+		})));
 		text("Zmiany widac od razu - to menu tez uzywa motywu. Ekwipunek: otworz E, zeby zobaczyc animacje.");
 	}
 
@@ -298,8 +312,13 @@ public class ZiemniakMenuScreen extends Screen {
 				toggle("Kokardka", c -> c.panelBow, (c, v) -> c.panelBow = v));
 		buttons(toggle("Serca w rogach", c -> c.panelCornerHearts, (c, v) -> c.panelCornerHearts = v),
 				toggle("Ramka slotu", c -> c.slotHover, (c, v) -> c.slotHover = v));
-		buttons(button(() -> "Wszystko TAK", () -> setAllAnimations(true)),
-				button(() -> "Wszystko NIE", () -> setAllAnimations(false)));
+		buttons(silent(button(() -> "Wszystko TAK", () -> {
+			setAllAnimations(true);
+			Sounds.play(Sounds.Sfx.TOGGLE_ON);
+		})), silent(button(() -> "Wszystko NIE", () -> {
+			setAllAnimations(false);
+			Sounds.play(Sounds.Sfx.TOGGLE_OFF);
+		})));
 	}
 
 	private void buildCursor() {
@@ -321,6 +340,7 @@ public class ZiemniakMenuScreen extends Screen {
 		text((ShaderManager.OWN.size() - 1) + " wlasnych shaderow + " + ShaderManager.NET.size() + " shaderow z internetu do pobrania jednym kliknieciem.");
 		text(HudManager.MODULES.size() + " modulow HUD z edytorem przeciagania, ostrzezenie o niskim HP, zoom, fullbright, "
 				+ (Options.Crosshair.values().length - 1) + " wlasnych celownikow.");
+		text("Dzwieki: " + Sounds.Sfx.values().length + " wlasnych dzwiekow + pozytywka w menu, zestaw Minecraft, 5 kategorii, glosnosc.");
 		header("Shadery z internetu");
 		text("Pobierane sa z Modrinth do folderu shaderpacks. Do ich dzialania potrzebny jest Iris "
 				+ "(przycisk \"Pobierz Iris + Sodium\" w zakladce Shadery, potem restart gry).");
@@ -346,10 +366,11 @@ public class ZiemniakMenuScreen extends Screen {
 	}
 
 	private ButtonWidget hudToggle(HudManager.Module m) {
-		return button(() -> m.name + ": " + (HudManager.pos(m).on ? "TAK" : "NIE"), () -> {
+		return silent(button(() -> m.name + ": " + (HudManager.pos(m).on ? "TAK" : "NIE"), () -> {
 			HudManager.pos(m).on = !HudManager.pos(m).on;
 			ZiemniakConfig.save();
-		});
+			Sounds.play(HudManager.pos(m).on ? Sounds.Sfx.TOGGLE_ON : Sounds.Sfx.TOGGLE_OFF);
+		}));
 	}
 
 	private void buildTools() {
@@ -369,6 +390,34 @@ public class ZiemniakMenuScreen extends Screen {
 			client.options.getSneakToggled().setValue(!client.options.getSneakToggled().getValue());
 			client.options.write();
 		}));
+	}
+
+	private void buildSounds() {
+		buttons(toggle("Dzwieki", c -> c.soundsEnabled, (c, v) -> c.soundsEnabled = v),
+				toggle("Pozytywka w menu", c -> c.menuMusic, (c, v) -> c.menuMusic = v));
+		buttons(cycle("Zestaw", c -> c.soundPack, (c, v) -> c.soundPack = v),
+				cycle("Glosnosc", c -> c.soundVolume, (c, v) -> {
+					c.soundVolume = v;
+					Sounds.restartMusic();
+				}));
+		header("Kategorie");
+		buttons(toggle("Przyciski i menu", c -> c.soundUi, (c, v) -> c.soundUi = v),
+				toggle("Ekwipunek", c -> c.soundInventory, (c, v) -> c.soundInventory = v));
+		buttons(toggle("Efekty klikniecia", c -> c.soundEffects, (c, v) -> c.soundEffects = v),
+				toggle("Gra (combo, HP, zoom)", c -> c.soundGame, (c, v) -> c.soundGame = v));
+		buttons(toggle("Shadery i pobieranie", c -> c.soundShaders, (c, v) -> c.soundShaders = v));
+		header("Posluchaj");
+		buttons(test("Otwarcie", Sounds.Sfx.OPEN), test("Zakladka", Sounds.Sfx.TAB), test("Losuj", Sounds.Sfx.RANDOM));
+		buttons(test("Ekwipunek", Sounds.Sfx.INV_OPEN), test("Serduszka", Sounds.Sfx.FX_HEARTS), test("Konfetti", Sounds.Sfx.FX_CONFETTI));
+		buttons(test("Duze serce", Sounds.Sfx.FX_BIG_HEART), test("Fala", Sounds.Sfx.FX_WAVE), test("Iskry", Sounds.Sfx.FX_SPARKS));
+		buttons(test("Combo", Sounds.Sfx.COMBO), test("Bicie serca", Sounds.Sfx.HEARTBEAT), test("Zoom", Sounds.Sfx.ZOOM_IN));
+		buttons(test("Shader", Sounds.Sfx.SHADER_APPLY), test("Pobrano", Sounds.Sfx.DL_DONE), test("Blad", Sounds.Sfx.ERROR));
+		text("Zestaw \"Kawaii\" to wlasne dzwieki (dzwoneczki, popy, pozytywka). \"Minecraft\" uzywa dzwiekow z gry. "
+				+ "Pozytywka gra w menu ESC, w tym menu i na ekranie glownym (suwak Muzyka w opcjach dzwieku Minecrafta).");
+	}
+
+	private ButtonWidget test(String label, Sounds.Sfx sfx) {
+		return silent(button(() -> "♪ " + label, () -> Sounds.play(sfx)));
 	}
 
 	private void setAllAnimations(boolean v) {
@@ -395,6 +444,7 @@ public class ZiemniakMenuScreen extends Screen {
 				.filter(e -> e != Options.CursorTrail.BRAK).toArray(Options.CursorTrail[]::new));
 		ZiemniakConfig.save();
 		FemboyTheme.resetOpened(this);
+		Sounds.play(Sounds.Sfx.RANDOM);
 	}
 
 	private static <T> T rnd(Random r, T[] arr) {
@@ -443,7 +493,7 @@ public class ZiemniakMenuScreen extends Screen {
 		Colors c = FemboyTheme.pal();
 		float open = FemboyTheme.easeOutCubic(FemboyTheme.sinceOpen(this) / 0.4f);
 		int sideX1 = tabButtons.isEmpty() ? 100 : tabButtons.get(0).getX() + tabButtons.get(0).getWidth();
-		Shapes.fillRounded(ctx, 6, areaY0 - 4, sideX1 + 4, areaY0 + TABS.length * 23 + 2, FemboyTheme.argb(0.22f * open, FemboyTheme.WHITE));
+		Shapes.fillRounded(ctx, 6, areaY0 - 4, sideX1 + 4, areaY0 + TABS.length * 21 + 2, FemboyTheme.argb(0.22f * open, FemboyTheme.WHITE));
 		Shapes.fillRounded(ctx, areaX0, areaY0 - 4, areaX1, areaY1 + 2, FemboyTheme.argb(0.2f * open, FemboyTheme.WHITE));
 		Shapes.outlineRounded(ctx, areaX0, areaY0 - 4, areaX1, areaY1 + 2, FemboyTheme.argb(0.6f * open, c.light()));
 	}

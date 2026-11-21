@@ -116,6 +116,23 @@ public final class Options {
 		public String label() { return label; }
 	}
 
+	public enum SoundPack implements Named {
+		KAWAII("Kawaii"), MINECRAFT("Minecraft");
+
+		private final String label;
+		SoundPack(String l) { label = l; }
+		public String label() { return label; }
+	}
+
+	public enum SoundVolume implements Named {
+		V25("25%", 0.25f), V50("50%", 0.5f), V75("75%", 0.75f), V100("100%", 1f);
+
+		private final String label;
+		public final float mul;
+		SoundVolume(String l, float m) { label = l; mul = m; }
+		public String label() { return label; }
+	}
+
 	public static <E extends Enum<E>> E next(E value) {
 		E[] all = value.getDeclaringClass().getEnumConstants();
 		return all[(value.ordinal() + 1) % all.length];

@@ -7,6 +7,7 @@ import org.lwjgl.glfw.GLFW;
 
 import com.ziemniak.client.config.ZiemniakConfig;
 import com.ziemniak.client.hud.HudManager;
+import com.ziemniak.client.sound.Sounds;
 import com.ziemniak.client.util.Zoom;
 import com.ziemniak.client.screen.ZiemniakMenuScreen;
 import com.ziemniak.client.theme.FemboyTheme;
@@ -48,6 +49,7 @@ public class ZiemniakClient implements ClientModInitializer {
 				if (client.currentScreen == null) client.setScreen(new ZiemniakMenuScreen(null));
 			}
 			Zoom.tick(client);
+			Sounds.tick(client);
 			HudManager.tick(client);
 		});
 
@@ -63,7 +65,8 @@ public class ZiemniakClient implements ClientModInitializer {
 			if (!FemboyTheme.isThemed(screen)) return;
 			FemboyTheme.markOpened(screen);
 
-			ScreenMouseEvents.afterMouseClick(screen).register((s, mx, my, button) -> FemboyTheme.addBurst(mx, my));
+			ScreenMouseEvents.afterMouseClick(screen).register((s, mx, my, button) ->
+					FemboyTheme.addBurst(mx, my, s.hoveredElement(mx, my).isEmpty()));
 			ScreenEvents.afterRender(screen).register((s, ctx, mx, my, delta) -> FemboyTheme.drawOverlay(ctx, s, mx, my));
 
 			if (FemboyTheme.isPause(screen)) {

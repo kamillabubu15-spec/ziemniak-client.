@@ -44,9 +44,19 @@ poswiata panelu, kokardka, serca w rogach, ramka slotu).
 klawisze + CPS, zbroja z wytrzymaloscia, licznik przedmiotow, cel z paskiem HP, combo, kompas),
 edytor przeciagania myszka, skala HUD, tlo modulow, ostrzezenie przy niskim HP.
 
+**Dzwieki**: 30 wlasnych dzwiekow (dzwoneczki, popy, iskierki, "boing", konfetti, bicie serca, zoom, magia shaderow)
++ pozytywka grajaca w menu ESC, menu moda i na ekranie glownym. Graja przy: najechaniu i kliknieciu przycisku,
+przelacznikach TAK/NIE, zmianie zakladki, otwarciu/zamknieciu menu i ekwipunku, najechaniu na slot z przedmiotem,
+efektach klikniecia (kazdy efekt ma swoj dzwiek), combo (coraz wyzszy ton), niskim HP (bicie serca), zoomie,
+wlaczeniu/wylaczeniu shadera, pobieraniu (start, gotowe, blad), losowaniu i resecie, przeciaganiu w edytorze HUD.
+Dwa zestawy: "Kawaii" (wlasne) i "Minecraft" (dzwieki z gry), 4 poziomy glosnosci, 5 kategorii do wylaczenia,
+przyciski "Posluchaj" do testu. Film z dzwiekiem: `podglad/dzwieki-demo.mp4`.
+Dzwieki generuje skrypt `tools/sounds/generate.py` (python3 + numpy + ffmpeg).
+
 **Narzedzia**: zoom (2x/4x/6x/10x, plynna kamera), fullbright, 6 wlasnych celownikow,
 sprint/skradanie na przelacznik (opcje Minecrafta).
 
+![Dzwieki](podglad/zakladka-dzwieki.png)
 ![HUD](podglad/hud.png)
 ![Edytor HUD](podglad/edytor-hud.png)
 

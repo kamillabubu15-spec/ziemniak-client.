@@ -26,6 +26,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.blaze3d.platform.GlDebugInfo;
 import com.ziemniak.client.config.ZiemniakConfig;
+import com.ziemniak.client.sound.Sounds;
 
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
@@ -78,8 +79,14 @@ public final class ShaderManager {
 	}
 
 	public static void select(String id) {
+		select(id, true);
+	}
+
+	public static void select(String id, boolean sound) {
+		boolean changed = !id.equals(ZiemniakConfig.get().shader);
 		ZiemniakConfig.get().shader = id;
 		ZiemniakConfig.save();
+		if (sound && changed) Sounds.play(id.equals("brak") ? Sounds.Sfx.SHADER_OFF : Sounds.Sfx.SHADER_APPLY);
 	}
 
 	// ================================================================ shadery z internetu
@@ -191,6 +198,7 @@ public final class ShaderManager {
 		Status st = status(key);
 		if (st.state == State.POBIERANIE) return;
 		st.state = State.POBIERANIE;
+		Sounds.play(Sounds.Sfx.DL_START);
 		st.progress = 0f;
 		st.error = null;
 		CompletableFuture.runAsync(() -> {
@@ -234,9 +242,11 @@ public final class ShaderManager {
 				st.file = name;
 				st.progress = 1f;
 				st.state = State.GOTOWE;
+				Sounds.play(Sounds.Sfx.DL_DONE);
 			} catch (Exception e) {
 				st.error = e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage();
 				st.state = State.BLAD;
+				Sounds.play(Sounds.Sfx.ERROR);
 			}
 		}, Util.getDownloadWorkerExecutor());
 	}
@@ -268,8 +278,10 @@ public final class ShaderManager {
 			cfg.getClass().getMethod("setShadersEnabled", boolean.class).invoke(cfg, true);
 			cfg.getClass().getMethod("save").invoke(cfg);
 			iris.getMethod("reload").invoke(null);
+			Sounds.play(Sounds.Sfx.SHADER_APPLY);
 			return true;
 		} catch (Throwable t) {
+			Sounds.play(Sounds.Sfx.ERROR);
 			return false;
 		}
 	}
@@ -281,6 +293,7 @@ public final class ShaderManager {
 			cfg.getClass().getMethod("setShadersEnabled", boolean.class).invoke(cfg, false);
 			cfg.getClass().getMethod("save").invoke(cfg);
 			iris.getMethod("reload").invoke(null);
+			Sounds.play(Sounds.Sfx.SHADER_OFF);
 			return true;
 		} catch (Throwable t) {
 			return false;

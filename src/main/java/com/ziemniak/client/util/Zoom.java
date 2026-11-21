@@ -1,6 +1,7 @@
 package com.ziemniak.client.util;
 
 import com.ziemniak.client.config.ZiemniakConfig;
+import com.ziemniak.client.sound.Sounds;
 
 import net.minecraft.client.MinecraftClient;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
@@ -23,11 +24,13 @@ public final class Zoom {
 		boolean want = cfg.zoomEnabled && key != null && held(mc) && mc.currentScreen == null;
 		if (want && !active) {
 			active = true;
+			Sounds.play(Sounds.Sfx.ZOOM_IN);
 			extra = 1f;
 			savedSmooth = mc.options.smoothCameraEnabled;
 			if (cfg.zoomSmooth) mc.options.smoothCameraEnabled = true;
 		} else if (!want && active) {
 			active = false;
+			Sounds.play(Sounds.Sfx.ZOOM_OUT);
 			mc.options.smoothCameraEnabled = savedSmooth;
 		}
 	}

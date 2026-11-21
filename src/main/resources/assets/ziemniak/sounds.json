@@ -1,0 +1,220 @@
+{
+  "dl.done": {
+    "sounds": [
+      {
+        "name": "ziemniak:dl/done"
+      }
+    ]
+  },
+  "dl.start": {
+    "sounds": [
+      {
+        "name": "ziemniak:dl/start"
+      }
+    ]
+  },
+  "fx.big_heart": {
+    "sounds": [
+      {
+        "name": "ziemniak:fx/big_heart"
+      }
+    ]
+  },
+  "fx.confetti": {
+    "sounds": [
+      {
+        "name": "ziemniak:fx/confetti"
+      }
+    ]
+  },
+  "fx.flowers": {
+    "sounds": [
+      {
+        "name": "ziemniak:fx/flowers"
+      }
+    ]
+  },
+  "fx.hearts": {
+    "sounds": [
+      {
+        "name": "ziemniak:fx/hearts"
+      }
+    ]
+  },
+  "fx.sparks": {
+    "sounds": [
+      {
+        "name": "ziemniak:fx/sparks"
+      }
+    ]
+  },
+  "fx.stars": {
+    "sounds": [
+      {
+        "name": "ziemniak:fx/stars"
+      }
+    ]
+  },
+  "fx.wave": {
+    "sounds": [
+      {
+        "name": "ziemniak:fx/wave"
+      }
+    ]
+  },
+  "game.combo": {
+    "sounds": [
+      {
+        "name": "ziemniak:game/combo"
+      }
+    ]
+  },
+  "game.heartbeat": {
+    "sounds": [
+      {
+        "name": "ziemniak:game/heartbeat"
+      }
+    ]
+  },
+  "game.zoom_in": {
+    "sounds": [
+      {
+        "name": "ziemniak:game/zoom_in"
+      }
+    ]
+  },
+  "game.zoom_out": {
+    "sounds": [
+      {
+        "name": "ziemniak:game/zoom_out"
+      }
+    ]
+  },
+  "hud.drop": {
+    "sounds": [
+      {
+        "name": "ziemniak:hud/drop"
+      }
+    ]
+  },
+  "hud.pick": {
+    "sounds": [
+      {
+        "name": "ziemniak:hud/pick"
+      }
+    ]
+  },
+  "inv.close": {
+    "sounds": [
+      {
+        "name": "ziemniak:inv/close"
+      }
+    ]
+  },
+  "inv.open": {
+    "sounds": [
+      {
+        "name": "ziemniak:inv/open"
+      }
+    ]
+  },
+  "inv.slot": {
+    "sounds": [
+      {
+        "name": "ziemniak:inv/slot"
+      }
+    ]
+  },
+  "music.musicbox": {
+    "sounds": [
+      {
+        "name": "ziemniak:music/musicbox",
+        "stream": true
+      }
+    ]
+  },
+  "shader.apply": {
+    "sounds": [
+      {
+        "name": "ziemniak:shader/apply"
+      }
+    ]
+  },
+  "shader.off": {
+    "sounds": [
+      {
+        "name": "ziemniak:shader/off"
+      }
+    ]
+  },
+  "ui.click": {
+    "sounds": [
+      {
+        "name": "ziemniak:ui/click"
+      }
+    ]
+  },
+  "ui.close": {
+    "sounds": [
+      {
+        "name": "ziemniak:ui/close"
+      }
+    ]
+  },
+  "ui.error": {
+    "sounds": [
+      {
+        "name": "ziemniak:ui/error"
+      }
+    ]
+  },
+  "ui.hover": {
+    "sounds": [
+      {
+        "name": "ziemniak:ui/hover"
+      }
+    ]
+  },
+  "ui.open": {
+    "sounds": [
+      {
+        "name": "ziemniak:ui/open"
+      }
+    ]
+  },
+  "ui.random": {
+    "sounds": [
+      {
+        "name": "ziemniak:ui/random"
+      }
+    ]
+  },
+  "ui.reset": {
+    "sounds": [
+      {
+        "name": "ziemniak:ui/reset"
+      }
+    ]
+  },
+  "ui.tab": {
+    "sounds": [
+      {
+        "name": "ziemniak:ui/tab"
+      }
+    ]
+  },
+  "ui.toggle_off": {
+    "sounds": [
+      {
+        "name": "ziemniak:ui/toggle_off"
+      }
+    ]
+  },
+  "ui.toggle_on": {
+    "sounds": [
+      {
+        "name": "ziemniak:ui/toggle_on"
+      }
+    ]
+  }
+}

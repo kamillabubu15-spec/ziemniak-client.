@@ -3,10 +3,12 @@ package com.ziemniak.client.mixin;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import com.ziemniak.client.sound.Sounds;
 import com.ziemniak.client.theme.FemboyTheme;
 
 import net.minecraft.client.gui.DrawContext;
@@ -22,6 +24,8 @@ public abstract class HandledScreenMixin extends Screen {
 	@Shadow protected int backgroundWidth;
 	@Shadow protected int backgroundHeight;
 	@Shadow @Nullable protected Slot focusedSlot;
+
+	@Unique private Slot ziemniak$lastSlot;
 
 	protected HandledScreenMixin(Text title) {
 		super(title);
@@ -43,6 +47,10 @@ public abstract class HandledScreenMixin extends Screen {
 	@Inject(method = "render", at = @At("TAIL"))
 	private void ziemniak$slotHover(DrawContext ctx, int mouseX, int mouseY, float delta, CallbackInfo ci) {
 		if (!FemboyTheme.isInventory(this)) return;
+		if (focusedSlot != ziemniak$lastSlot) {
+			ziemniak$lastSlot = focusedSlot;
+			if (focusedSlot != null && focusedSlot.hasStack()) Sounds.play(Sounds.Sfx.SLOT);
+		}
 		if (focusedSlot != null && focusedSlot.isEnabled()) {
 			FemboyTheme.drawSlotHover(ctx, x + focusedSlot.x, y + focusedSlot.y);
 		}

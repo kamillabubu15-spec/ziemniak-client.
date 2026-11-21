@@ -10,6 +10,7 @@ import java.util.Map;
 
 import com.ziemniak.client.config.ZiemniakConfig;
 import com.ziemniak.client.config.ZiemniakConfig.HudPos;
+import com.ziemniak.client.sound.Sounds;
 import com.ziemniak.client.theme.FemboyTheme;
 import com.ziemniak.client.theme.Palettes.Colors;
 import com.ziemniak.client.theme.Shapes;
@@ -319,6 +320,7 @@ public final class HudManager {
 		long now = Util.getMeasuringTimeMs();
 		combo = now - lastHit > 2500L ? 1 : combo + 1;
 		lastHit = now;
+		Sounds.play(Sounds.Sfx.COMBO, 0.8f + Math.min(combo, 12) * 0.07f);
 		if (e instanceof LivingEntity le) {
 			lastTarget = le;
 			lastTargetTime = now;
@@ -348,7 +350,10 @@ public final class HudManager {
 		return n < r.length ? r[n] : String.valueOf(n);
 	}
 
+	private static int heartbeatTimer;
+
 	public static void tick(MinecraftClient mc) {
+		tickHeartbeat(mc);
 		if (mc.player == null) {
 			lastPos = null;
 			return;
@@ -362,6 +367,21 @@ public final class HudManager {
 			}
 		}
 		lastPos = pos;
+	}
+
+	/** Bicie serca przy niskim HP (razem z ostrzezeniem na ekranie). */
+	private static void tickHeartbeat(MinecraftClient mc) {
+		ClientPlayerEntity p = mc.player;
+		if (p == null || !ZiemniakConfig.get().lowHpWarning || p.isCreative() || p.isSpectator() || !p.isAlive()) return;
+		float hp = p.getHealth() / Math.max(1f, p.getMaxHealth());
+		if (hp > 0.3f) {
+			heartbeatTimer = 0;
+			return;
+		}
+		if (--heartbeatTimer <= 0) {
+			Sounds.play(Sounds.Sfx.HEARTBEAT, hp < 0.15f ? 1.15f : 1f);
+			heartbeatTimer = hp < 0.15f ? 12 : 20;
+		}
 	}
 
 	// ================================================================ pozycje

@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "ziemniak-client",
+  "version": "${version}",
+  "name": "Ziemniak Client",
+  "description": "Pastelowy (femboy) motyw menu ESC i ekwipunku z animacjami.",
+  "authors": ["Ziemniak"],
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["com.ziemniak.client.ZiemniakClient"]
+  },
+  "mixins": ["ziemniak-client.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.16.9",
+    "fabric-api": "*",
+    "minecraft": "~1.21.4",
+    "java": ">=21"
+  }
+}

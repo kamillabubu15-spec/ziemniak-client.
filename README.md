@@ -11,6 +11,28 @@ Menu otwierasz w grze klawiszem **RIGHT SHIFT**.
 - FPS Booster - mniej czasteczek, wylaczone chmury, fast graphics (przelaczniki wbudowanych opcji gry)
 - Config zapisuje sie do `.minecraft/config/ziemniak-client.json`
 
+## Femboy motyw (menu ESC + ekwipunek)
+![Menu ESC](podglad/menu-esc.png)
+![Ekwipunek](podglad/ekwipunek.png)
+
+Filmiki: `podglad/menu-esc.mp4`, `podglad/ekwipunek.mp4`.
+
+**Menu ESC**
+- rozowo-lawendowe tlo, ktore plynnie zmienia kolor
+- serduszka plynace do gory + migajace iskierki
+- przyciski wjezdzaja na zmiane z lewej i prawej z odbiciem
+- zaokraglone rozowe przyciski: po najechaniu powiekszaja sie, swieca, przelatuje po nich blask, a obok napisu wskakuja serduszka
+- pulsujace serduszka przy tytule, falujacy napis "ziemniak client" na dole
+- wybuch serduszek przy kazdym kliknieciu, male serduszko przy kursorze
+
+**Ekwipunek (i kazdy inny ekran ze slotami: skrzynia, piec itd.)**
+- panel "wyskakuje" przy otwarciu (animacja pop)
+- rozowy odcien panelu, pulsujaca poswiata wokol, kokardka na gorze, serduszka w rogach
+- slot pod myszka: pulsujaca rozowa ramka i skaczace serduszko
+- to samo tlo z serduszkami i wybuch serduszek przy kliknieciu
+
+Kod: `src/main/java/com/ziemniak/client/theme/FemboyTheme.java` + mixiny w `mixin/`.
+
 ## Jak zbudowac (potrzebujesz internetu - ja go tu nie mam)
 1. Zainstaluj **JDK 21**.
 2. Wypakuj ten folder, wejdz w niego w terminalu.

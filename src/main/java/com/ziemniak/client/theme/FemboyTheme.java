@@ -10,13 +10,16 @@ import java.util.WeakHashMap;
 import com.ziemniak.client.config.Options;
 import com.ziemniak.client.config.Options.ParticleKind;
 import com.ziemniak.client.config.ZiemniakConfig;
+import com.ziemniak.client.hud.HudEditorScreen;
 import com.ziemniak.client.screen.ZiemniakMenuScreen;
 import com.ziemniak.client.theme.Palettes.Colors;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.gui.screen.GameMenuScreen;
+import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.widget.ClickableWidget;
@@ -33,7 +36,8 @@ public final class FemboyTheme {
 
 	private static final ParticleKind[] MIX_KINDS = {
 			ParticleKind.SERDUSZKA, ParticleKind.GWIAZDKI, ParticleKind.SAKURA, ParticleKind.BABELKI,
-			ParticleKind.MOTYLKI, ParticleKind.SNIEG, ParticleKind.NUTKI, ParticleKind.LAPKI};
+			ParticleKind.MOTYLKI, ParticleKind.SNIEG, ParticleKind.NUTKI, ParticleKind.LAPKI,
+			ParticleKind.CHMURKI, ParticleKind.TRUSKAWKI, ParticleKind.DIAMENTY, ParticleKind.KOTKI};
 
 	private static final Map<Screen, Long> OPENED = new WeakHashMap<>();
 	private static final Map<ClickableWidget, HoverState> HOVER = new WeakHashMap<>();
@@ -69,13 +73,25 @@ public final class FemboyTheme {
 		return cfg().themeEnabled && s instanceof HandledScreen<?>;
 	}
 
+	/** Pozostale menu gry (opcje, wybor swiata itd.), gdy wlaczony "motyw we wszystkich menu". */
+	public static boolean isOtherMenu(Screen s) {
+		ZiemniakConfig c = cfg();
+		return s != null && c.themeEnabled && c.themeAllMenus && !(s instanceof HandledScreen<?>) && !(s instanceof GameMenuScreen)
+				&& !(s instanceof ZiemniakMenuScreen) && !(s instanceof TitleScreen) && !(s instanceof HudEditorScreen)
+				&& !(s instanceof ChatScreen);
+	}
+
+	public static boolean isTitle(Screen s) {
+		return s instanceof TitleScreen && cfg().themeEnabled && cfg().themeTitleScreen;
+	}
+
 	public static boolean isThemed(Screen s) {
-		return isPause(s) || isInventory(s) || s instanceof ZiemniakMenuScreen;
+		return isPause(s) || isInventory(s) || s instanceof ZiemniakMenuScreen || isOtherMenu(s) || isTitle(s);
 	}
 
 	/** Ekrany, na ktorych przyciski dostaja pastelowy wyglad. */
 	public static boolean stylesButtons(Screen s) {
-		return isPause(s) || s instanceof ZiemniakMenuScreen;
+		return isPause(s) || s instanceof ZiemniakMenuScreen || s instanceof HudEditorScreen || isOtherMenu(s) || isTitle(s);
 	}
 
 	// ================================================================ czas / easing
@@ -87,6 +103,10 @@ public final class FemboyTheme {
 		} catch (NumberFormatException e) {
 			return 1.0;
 		}
+	}
+
+	public static double timeScale() {
+		return TIME_SCALE;
 	}
 
 	/** Zegar animacji w ms (uwzglednia predkosc z ustawien). */
@@ -177,7 +197,7 @@ public final class FemboyTheme {
 		float shift = (float) (Math.sin(t * 0.8) + 1.0) / 2f;
 		int top = lerpRgb(shift, c.top1(), c.top2());
 		int bottom = lerpRgb(shift, c.bot1(), c.bot2());
-		float base = isPause(screen) ? 0.62f : (screen instanceof ZiemniakMenuScreen ? 0.72f : 0.5f);
+		float base = isPause(screen) ? 0.62f : (screen instanceof ZiemniakMenuScreen ? 0.72f : (screen instanceof TitleScreen ? 0.42f : 0.5f));
 		if (c.night()) base += 0.18f;
 
 		switch (cfg.background) {
@@ -216,6 +236,29 @@ public final class FemboyTheme {
 						int x0 = gx * cell + off, y0 = gy * cell + off;
 						ctx.fill(x0, y0, x0 + cell, y0 + cell, argb(0.14f * open, WHITE));
 					}
+				}
+			}
+			case FALE -> {
+				ctx.fillGradient(0, 0, w, h, argb(base * open, top), argb(base * open, bottom));
+				int[] cols = {c.p2(), c.main(), c.p3()};
+				for (int b = 0; b < 3; b++) {
+					for (int x = 0; x < w; x += 3) {
+						float yy = h * (0.68f + 0.08f * b) + (float) Math.sin(x * 0.02f + t * (0.8f + 0.3f * b) + b * 2f) * 8f
+								+ (float) Math.sin(x * 0.045f - t * 1.1f + b) * 3f;
+						ctx.fill(x, Math.round(yy), x + 3, h, argb((0.22f + 0.06f * b) * open, cols[b]));
+						ctx.fill(x, Math.round(yy), x + 3, Math.round(yy) + 1, argb(0.5f * open, WHITE));
+					}
+				}
+			}
+			case BOKEH -> {
+				ctx.fillGradient(0, 0, w, h, argb(base * open, top), argb(base * open, bottom));
+				int n = Math.round(14 * cfg.density.mul);
+				for (int i = 0; i < n; i++) {
+					float r = 10f + hash(i + 400) * 20f;
+					float bx = (hash(i * 3 + 401) * (w + 60) + t * (3f + hash(i + 402) * 6f)) % (w + 60) - 30;
+					float by = hash(i * 5 + 403) * h + (float) Math.sin(t * 0.5f + i) * 12f;
+					float a = 0.1f + 0.1f * (float) (Math.sin(t * 1.2f + i) + 1.0) / 2f;
+					Shapes.disc(ctx, bx, by, r, argb(a * open, pick(c, i)));
 				}
 			}
 			case BRAK -> ctx.fillGradient(0, 0, w, h, argb(0.25f * open, top), argb(0.25f * open, bottom));
@@ -342,6 +385,37 @@ public final class FemboyTheme {
 						float yy = row + ((st & 1) == 0 ? -5f : 5f);
 						Shapes.draw(ctx, Shapes.PAW, xx, yy, 1.1f, argb(0.7f * (1f - s / 6f) * open, col));
 					}
+				}
+				case CHMURKI -> {
+					float s = 1.5f + hs2 * 1.8f;
+					float xx = (hx * (w + 80) + t * (5f + hs * 8f)) % (w + 80) - 40;
+					float yy = hy * h * 0.8f + (float) Math.sin(t * 0.6f + i) * 4f;
+					Shapes.draw(ctx, Shapes.CLOUD, xx, yy, s, argb(0.55f * open, WHITE));
+				}
+				case TRUSKAWKI -> {
+					float travel = h + 30f;
+					float yy = ((t * (13f + hs * 12f) + hy * travel) % travel) - 15f;
+					float xx = hx * w + (float) Math.sin(t * 1.4f + i) * 10f;
+					float flip = (float) Math.cos(t * 1.5f + i);
+					float s = 1f + hs2 * 0.9f;
+					Shapes.draw(ctx, Shapes.STRAWBERRY, xx, yy, s * (flip >= 0 ? 1f : -1f), s, argb(0.85f * open, 0xFF5A7A), argb(0.9f * open, 0x6FCF6A));
+				}
+				case DIAMENTY -> {
+					float xx = hx * w + (float) Math.sin(t * 0.7f + i) * 8f;
+					float yy = hy * h + (float) Math.cos(t * 0.9f + i) * 6f;
+					float tw = (float) (Math.sin(t * (2f + hs * 2f) + i * 1.3f) + 1f) / 2f;
+					Shapes.draw(ctx, Shapes.DIAMOND, xx, yy, 1f + hs2 * 0.8f, 1f + hs2 * 0.8f, argb((0.45f + 0.45f * tw) * open, i % 2 == 0 ? 0x9CF0FF : c.p3()), argb(open, WHITE));
+					if (tw > 0.85f) Shapes.sparkle(ctx, xx + 5f, yy - 5f, 0.8f, argb(open, WHITE));
+				}
+				case KOTKI -> {
+					float travel = h + 40f;
+					float yy = h + 20f - ((t * (8f + hs * 10f) + hy * travel) % travel);
+					float xx = hx * w + (float) Math.sin(t * 1.1f + i) * 12f;
+					boolean blink = ((t * 0.7f + hs * 5f) % 3f) < 0.15f;
+					float look = ((int) (t * 0.5f + i)) % 2 == 0 ? 1f : -1f;
+					float s = 1f + hs2 * 0.9f;
+					int face = i % 2 == 0 ? 0xFFF2F7 : c.p2();
+					Shapes.draw(ctx, Shapes.CAT, xx, yy, s * look, s, argb(0.85f * open, face), argb(0.95f * open, blink ? face : 0x3A2A40));
 				}
 				default -> { }
 			}
@@ -493,9 +567,9 @@ public final class FemboyTheme {
 			Shapes.fillRounded(ctx, x1 - 2, y1 - 2, x2 + 2, y2 + 2, argb(alpha * 0.35f * hp, c.light()));
 		}
 
-		int top = active ? lerpRgb(hp, c.light(), lerpRgb(0.5f, c.light(), WHITE)) : 0xE6CFE0;
-		int bottom = active ? lerpRgb(hp, c.main(), lerpRgb(0.25f, c.main(), WHITE)) : 0xCDB3C7;
-		int border = active ? lerpRgb(hp, c.dark(), WHITE) : 0xA98AA0;
+		int top = active ? lerpRgb(hp, c.light(), lerpRgb(0.5f, c.light(), WHITE)) : lerpRgb(0.7f, c.light(), 0xDCD6DA);
+		int bottom = active ? lerpRgb(hp, c.main(), lerpRgb(0.25f, c.main(), WHITE)) : lerpRgb(0.7f, c.main(), 0xC4BCC2);
+		int border = active ? lerpRgb(hp, c.dark(), WHITE) : lerpRgb(0.6f, c.dark(), 0x9A9298);
 		int textColor = active ? WHITE : 0xF3E6EF;
 		int shadow = active ? c.dark() : 0x7D6577;
 
@@ -562,6 +636,33 @@ public final class FemboyTheme {
 		m.pop();
 	}
 
+	/** Suwak: tor z wypelnieniem do wartosci i uchwyt z serduszkiem. */
+	public static void renderSlider(DrawContext ctx, ClickableWidget w, float alpha, boolean hovered, boolean active, double value) {
+		Colors c = pal();
+		TextRenderer tr = MinecraftClient.getInstance().textRenderer;
+		HoverState st = HOVER.computeIfAbsent(w, k -> new HoverState());
+		long now = now();
+		float dt = Math.min(0.1f, (now - st.last) / 1000f);
+		st.last = now;
+		st.progress += ((hovered && active ? 1f : 0f) - st.progress) * clamp01(dt * 14f);
+		float hp = st.progress;
+		int x1 = w.getX(), y1 = w.getY(), x2 = x1 + w.getWidth(), y2 = y1 + w.getHeight();
+		if (hp > 0.02f) Shapes.fillRounded(ctx, x1 - 2, y1 - 2, x2 + 2, y2 + 2, argb(alpha * 0.3f * hp, c.light()));
+		Shapes.fillRounded(ctx, x1, y1, x2, y2, argb(alpha * 0.85f, lerpRgb(0.55f, c.dark(), 0x201020)));
+		int fx = x1 + 1 + (int) Math.round((x2 - x1 - 2) * clamp01((float) value));
+		ctx.fillGradient(x1 + 1, y1 + 1, fx, y2 - 1, argb(alpha, c.light()), argb(alpha, c.main()));
+		Shapes.outlineRounded(ctx, x1, y1, x2, y2, argb(alpha, lerpRgb(hp, c.dark(), WHITE)));
+		int hx = Math.max(x1 + 4, Math.min(x2 - 4, fx));
+		Shapes.fillRounded(ctx, hx - 4, y1, hx + 4, y2, argb(alpha, WHITE));
+		Shapes.draw(ctx, Shapes.HEART, hx, (y1 + y2) / 2f, 0.7f + 0.15f * hp, argb(alpha, c.main()));
+		String msg = w.getMessage().getString();
+		int tw = tr.getWidth(msg);
+		int tx = (x1 + x2) / 2 - tw / 2, ty = (y1 + y2) / 2 - 4;
+		int a = Math.max(4, Math.round(alpha * 255f)) << 24;
+		ctx.drawText(tr, msg, tx + 1, ty + 1, a | (c.dark() & 0xFFFFFF), false);
+		ctx.drawText(tr, msg, tx, ty, a | (active ? WHITE : 0xD8C8D4), false);
+	}
+
 	// ================================================================ wierzch: tytul, kursor, klik
 
 	public static void drawOverlay(DrawContext ctx, Screen screen, int mouseX, int mouseY) {
@@ -617,6 +718,9 @@ public final class FemboyTheme {
 				case SERDUSZKA -> Shapes.draw(ctx, Shapes.HEART, p[0], p[1] - age * 6f, 0.4f + a * 0.6f, argb(a * 0.8f, i % 2 == 0 ? c.main() : c.p3()));
 				case ISKIERKI -> Shapes.sparkle(ctx, p[0] + (hash(i + (int) p[2]) - 0.5f) * 6f, p[1] + age * 5f, 0.4f + a * 0.6f, argb(a, i % 2 == 0 ? WHITE : c.p2()));
 				case TECZA -> Shapes.dot(ctx, p[0], p[1], 0.8f + a * 1.2f, argb(a * 0.85f, Palettes.hsv(i * 0.05f + t * 0.5f, 0.55f, 1f)));
+				case GWIAZDKI -> Shapes.draw(ctx, Shapes.STAR, p[0], p[1] + age * 4f, 0.35f + a * 0.5f, argb(a, i % 2 == 0 ? 0xFFF3A8 : c.p2()));
+				case BABELKI -> Shapes.draw(ctx, Shapes.BUBBLE, p[0] + (float) Math.sin(age * 9f + i) * 3f, p[1] - age * 14f, 0.5f + age * 0.5f, 0.5f + age * 0.5f,
+						argb(a * 0.8f, 0xBDEBFF), argb(a, WHITE));
 				default -> { }
 			}
 			i++;
@@ -656,6 +760,20 @@ public final class FemboyTheme {
 					Shapes.ring(ctx, (float) b.x, (float) b.y, easeOutCubic(p) * 24f, 28, 0.9f, argb(1f - p, c.main()));
 					float p2 = clamp01((age - 0.12f) / dur);
 					if (p2 > 0f) Shapes.ring(ctx, (float) b.x, (float) b.y, easeOutCubic(p2) * 16f, 20, 0.7f, argb(1f - p2, WHITE));
+				}
+				case DUZE_SERCE -> {
+					float sc = 1f + easeOutBack(p * 1.4f) * 2.6f;
+					Shapes.draw(ctx, Shapes.HEART, (float) b.x, (float) b.y - p * 10f, sc + 0.4f, argb((1f - p) * 0.8f, WHITE));
+					Shapes.draw(ctx, Shapes.HEART, (float) b.x, (float) b.y - p * 10f, sc, argb(1f - p, c.main()));
+				}
+				case ISKRY -> {
+					for (int k = 0; k < 12; k++) {
+						double ang = k * Math.PI / 6 + b.seed * 0.21;
+						float v = 50f + hash(b.seed + k) * 30f;
+						float sx = (float) (b.x + Math.cos(ang) * v * age);
+						float sy = (float) (b.y + Math.sin(ang) * v * age + 60f * age * age);
+						Shapes.sparkle(ctx, sx, sy, 0.9f * (1f - p) + 0.3f, argb(1f - p, k % 3 == 0 ? 0xFFF3A8 : (k % 3 == 1 ? WHITE : c.p2())));
+					}
 				}
 				case KONFETTI -> {
 					for (int k = 0; k < 16; k++) {

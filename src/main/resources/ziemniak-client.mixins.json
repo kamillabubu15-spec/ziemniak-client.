@@ -6,8 +6,13 @@
   "client": [
     "GameRendererMixin",
     "HandledScreenMixin",
+    "InGameHudMixin",
+    "LightmapMixin",
+    "MouseMixin",
     "PressableWidgetMixin",
-    "ScreenMixin"
+    "ScreenMixin",
+    "SliderWidgetMixin",
+    "TitleScreenMixin"
   ],
   "injectors": {
     "defaultRequire": 1

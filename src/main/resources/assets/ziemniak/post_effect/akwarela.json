@@ -1,0 +1,91 @@
+{
+    "targets": {
+        "a": {},
+        "b": {}
+    },
+    "passes": [
+        {
+            "program": "minecraft:post/box_blur",
+            "inputs": [
+                {
+                    "sampler_name": "In",
+                    "target": "minecraft:main",
+                    "bilinear": true
+                }
+            ],
+            "output": "a",
+            "uniforms": [
+                {
+                    "name": "BlurDir",
+                    "values": [
+                        1.0,
+                        0.0
+                    ]
+                },
+                {
+                    "name": "Radius",
+                    "values": [
+                        5.0
+                    ]
+                }
+            ]
+        },
+        {
+            "program": "minecraft:post/box_blur",
+            "inputs": [
+                {
+                    "sampler_name": "In",
+                    "target": "a",
+                    "bilinear": true
+                }
+            ],
+            "output": "b",
+            "uniforms": [
+                {
+                    "name": "BlurDir",
+                    "values": [
+                        0.0,
+                        1.0
+                    ]
+                },
+                {
+                    "name": "Radius",
+                    "values": [
+                        5.0
+                    ]
+                }
+            ]
+        },
+        {
+            "program": "ziemniak:post/watercolor",
+            "inputs": [
+                {
+                    "sampler_name": "In",
+                    "target": "minecraft:main",
+                    "bilinear": true
+                },
+                {
+                    "sampler_name": "Blur",
+                    "target": "b",
+                    "bilinear": true
+                },
+                {
+                    "sampler_name": "Depth",
+                    "target": "minecraft:main",
+                    "use_depth_buffer": true
+                }
+            ],
+            "output": "a"
+        },
+        {
+            "program": "minecraft:post/blit",
+            "inputs": [
+                {
+                    "sampler_name": "In",
+                    "target": "a"
+                }
+            ],
+            "output": "minecraft:main"
+        }
+    ]
+}

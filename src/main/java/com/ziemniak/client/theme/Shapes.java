@@ -89,6 +89,39 @@ public final class Shapes {
 			".XXXXX.",
 			"..XXX.."};
 
+	public static final String[] CLOUD = {
+			"...XXX.....",
+			"..XXXXX.XX.",
+			".XXXXXXXXXX",
+			"XXXXXXXXXXX",
+			"XXXXXXXXXXX",
+			".XXXXXXXXX."};
+	public static final String[] STRAWBERRY = {
+			".oo.oo.",
+			"..ooo..",
+			".XXXXX.",
+			"XXXXXXX",
+			"XXXXXXX",
+			".XXXXX.",
+			"..XXX..",
+			"...X..."};
+	public static final String[] DIAMOND = {
+			".XXXXX.",
+			"XooXXXX",
+			"XXXXXXX",
+			".XXXXX.",
+			"..XXX..",
+			"...X..."};
+	public static final String[] CAT = {
+			"X.......X",
+			"XX.....XX",
+			"XXXXXXXXX",
+			"XXoXXXoXX",
+			"XXXXXXXXX",
+			"XXXXoXXXX",
+			".XXXXXXX.",
+			"..XXXXX.."};
+
 	/** Rysuje ksztalt wysrodkowany w (x, y). scaleX moze byc ujemne (odbicie = "obrot"). */
 	public static void draw(DrawContext ctx, String[] shape, float x, float y, float scaleX, float scaleY, int color, int color2) {
 		if ((color >>> 24) < 3 || scaleY == 0f) return;
@@ -149,6 +182,15 @@ public final class Shapes {
 		for (int i = 0; i < points; i++) {
 			double a = i * Math.PI * 2.0 / points;
 			dot(ctx, cx + (float) Math.cos(a) * r, cy + (float) Math.sin(a) * r, size, color);
+		}
+	}
+
+	/** Wypelnione kolo. */
+	public static void disc(DrawContext ctx, float cx, float cy, float r, int color) {
+		if ((color >>> 24) < 3) return;
+		for (int dy = (int) -r; dy < r; dy += 2) {
+			float half = (float) Math.sqrt(Math.max(0f, r * r - (dy + 1) * (dy + 1)));
+			ctx.fill(Math.round(cx - half), Math.round(cy + dy), Math.round(cx + half), Math.round(cy + dy + 2), color);
 		}
 	}
 

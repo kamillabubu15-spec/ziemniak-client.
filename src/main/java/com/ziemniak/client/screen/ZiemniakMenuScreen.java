@@ -12,6 +12,8 @@ import java.util.function.Supplier;
 
 import com.ziemniak.client.config.Options;
 import com.ziemniak.client.config.ZiemniakConfig;
+import com.ziemniak.client.hud.HudEditorScreen;
+import com.ziemniak.client.hud.HudManager;
 import com.ziemniak.client.shader.ShaderManager;
 import com.ziemniak.client.shader.ShaderManager.NetShader;
 import com.ziemniak.client.shader.ShaderManager.OwnShader;
@@ -33,7 +35,7 @@ import net.minecraft.util.Util;
 
 /** Menu moda: Shadery / Motyw / Animacje / Kursor i klik / Info. */
 public class ZiemniakMenuScreen extends Screen {
-	private static final String[] TABS = {"Shadery", "Motyw", "Animacje", "Kursor i klik", "Info"};
+	private static final String[] TABS = {"Shadery", "Motyw", "Animacje", "Kursor i klik", "HUD", "Narzedzia", "Info"};
 	private static int lastTab = 0;
 
 	private final Screen parent;
@@ -107,6 +109,8 @@ public class ZiemniakMenuScreen extends Screen {
 			case 1 -> buildTheme();
 			case 2 -> buildAnimations();
 			case 3 -> buildCursor();
+			case 4 -> buildHud();
+			case 5 -> buildTools();
 			default -> buildInfo();
 		}
 		layout();
@@ -270,6 +274,8 @@ public class ZiemniakMenuScreen extends Screen {
 		buttons(cycle("Przyciski", c -> c.buttonStyle, (c, v) -> c.buttonStyle = v),
 				cycle("Predkosc", c -> c.speed, (c, v) -> c.speed = v));
 		buttons(cycle("Ekwipunek", c -> c.inventoryOpen, (c, v) -> c.inventoryOpen = v));
+		buttons(toggle("Ekran glowny", c -> c.themeTitleScreen, (c, v) -> c.themeTitleScreen = v),
+				toggle("Wszystkie menu", c -> c.themeAllMenus, (c, v) -> c.themeAllMenus = v));
 		buttons(button(() -> "✨ Losuj wszystko!", this::randomize), button(() -> "Reset", () -> {
 			ZiemniakConfig.reset();
 			FemboyTheme.resetOpened(this);
@@ -305,15 +311,64 @@ public class ZiemniakMenuScreen extends Screen {
 
 	private void buildInfo() {
 		header("Ziemniak Client 1.0.0");
-		text("Minecraft 1.21.4 (Fabric). Menu otwierasz przyciskiem \"Ziemniak Mod\" w ESC albo klawiszem Prawy Shift.");
+		text("Minecraft 1.21.4 (Fabric). Menu otwierasz przyciskiem \"Ziemniak Mod\" w ESC albo klawiszem Prawy Shift. Zoom: C.");
 		text("Ustawienia zapisuja sie same w .minecraft/config/ziemniak-client.json.");
 		header("Co jest w srodku");
-		text("10 palet kolorow, 6 rodzajow tla, 9 rodzajow czasteczek, 4 style przyciskow, 4 predkosci animacji, "
-				+ "5 animacji otwierania ekwipunku, 6 efektow klikniecia, 4 slady kursora, 15 przelacznikow animacji.");
-		text("3 wlasne shadery (Rozowy Sen, Zlota Godzina, Anime) + 10 shaderow z internetu do pobrania jednym kliknieciem.");
+		text(Options.Palette.values().length + " palet kolorow, " + (Options.Background.values().length - 1) + " rodzajow tla, "
+				+ (Options.ParticleKind.values().length - 1) + " rodzajow czasteczek + mix, " + Options.ButtonStyle.values().length + " style przyciskow, "
+				+ (Options.InventoryOpen.values().length - 1) + " animacje otwierania ekwipunku, " + (Options.ClickEffect.values().length - 1)
+				+ " efektow klikniecia, " + (Options.CursorTrail.values().length - 1) + " sladow kursora, 14 przelacznikow animacji.");
+		text((ShaderManager.OWN.size() - 1) + " wlasnych shaderow + " + ShaderManager.NET.size() + " shaderow z internetu do pobrania jednym kliknieciem.");
+		text(HudManager.MODULES.size() + " modulow HUD z edytorem przeciagania, ostrzezenie o niskim HP, zoom, fullbright, "
+				+ (Options.Crosshair.values().length - 1) + " wlasnych celownikow.");
 		header("Shadery z internetu");
 		text("Pobierane sa z Modrinth do folderu shaderpacks. Do ich dzialania potrzebny jest Iris "
 				+ "(przycisk \"Pobierz Iris + Sodium\" w zakladce Shadery, potem restart gry).");
+	}
+
+	private void buildHud() {
+		buttons(toggle("HUD wlaczony", c -> c.hudEnabled, (c, v) -> c.hudEnabled = v),
+				toggle("Tlo modulow", c -> c.hudBackground, (c, v) -> c.hudBackground = v));
+		buttons(cycle("Skala HUD", c -> c.hudScale, (c, v) -> c.hudScale = v),
+				toggle("Ostrzezenie HP", c -> c.lowHpWarning, (c, v) -> c.lowHpWarning = v));
+		buttons(button(() -> "\u270E Edytuj polozenie (przeciaganie)", () -> client.setScreen(new HudEditorScreen(this))));
+		header("Moduly");
+		List<HudManager.Module> mods = HudManager.MODULES;
+		for (int i = 0; i < mods.size(); i += 2) {
+			HudManager.Module a = mods.get(i);
+			if (i + 1 < mods.size()) {
+				HudManager.Module b = mods.get(i + 1);
+				buttons(hudToggle(a), hudToggle(b));
+			} else {
+				buttons(hudToggle(a));
+			}
+		}
+	}
+
+	private ButtonWidget hudToggle(HudManager.Module m) {
+		return button(() -> m.name + ": " + (HudManager.pos(m).on ? "TAK" : "NIE"), () -> {
+			HudManager.pos(m).on = !HudManager.pos(m).on;
+			ZiemniakConfig.save();
+		});
+	}
+
+	private void buildTools() {
+		header("Zoom");
+		buttons(toggle("Zoom (klawisz C)", c -> c.zoomEnabled, (c, v) -> c.zoomEnabled = v),
+				cycle("Przyblizenie", c -> c.zoomLevel, (c, v) -> c.zoomLevel = v));
+		buttons(toggle("Plynna kamera przy zoomie", c -> c.zoomSmooth, (c, v) -> c.zoomSmooth = v));
+		text("Trzymaj C, kolko myszy zmienia przyblizenie. Klawisz zmienisz w Opcje -> Sterowanie.");
+		header("Widocznosc");
+		buttons(toggle("Fullbright", c -> c.fullbright, (c, v) -> c.fullbright = v),
+				cycle("Celownik", c -> c.crosshair, (c, v) -> c.crosshair = v));
+		header("Ruch (opcje Minecrafta)");
+		buttons(button(() -> "Sprint: " + (client.options.getSprintToggled().getValue() ? "Przelacz" : "Trzymaj"), () -> {
+			client.options.getSprintToggled().setValue(!client.options.getSprintToggled().getValue());
+			client.options.write();
+		}), button(() -> "Skradanie: " + (client.options.getSneakToggled().getValue() ? "Przelacz" : "Trzymaj"), () -> {
+			client.options.getSneakToggled().setValue(!client.options.getSneakToggled().getValue());
+			client.options.write();
+		}));
 	}
 
 	private void setAllAnimations(boolean v) {
@@ -328,16 +383,16 @@ public class ZiemniakMenuScreen extends Screen {
 		Random r = new Random();
 		ZiemniakConfig c = ZiemniakConfig.get();
 		c.palette = rnd(r, Options.Palette.values());
-		c.background = rnd(r, new Options.Background[]{Options.Background.GRADIENT, Options.Background.ZORZA,
-				Options.Background.TECZA, Options.Background.GWIAZDY, Options.Background.KRATKA});
+		c.background = rnd(r, java.util.Arrays.stream(Options.Background.values())
+				.filter(b -> b != Options.Background.BRAK).toArray(Options.Background[]::new));
 		c.particles = rnd(r, Options.ParticleKind.values());
 		c.buttonStyle = rnd(r, Options.ButtonStyle.values());
 		c.inventoryOpen = rnd(r, new Options.InventoryOpen[]{Options.InventoryOpen.POP, Options.InventoryOpen.WJAZD,
 				Options.InventoryOpen.OBROT, Options.InventoryOpen.SPREZYNA});
-		c.clickEffect = rnd(r, new Options.ClickEffect[]{Options.ClickEffect.SERDUSZKA, Options.ClickEffect.GWIAZDKI,
-				Options.ClickEffect.FALA, Options.ClickEffect.KONFETTI, Options.ClickEffect.KWIATKI});
-		c.cursorTrail = rnd(r, new Options.CursorTrail[]{Options.CursorTrail.SERDUSZKA, Options.CursorTrail.ISKIERKI,
-				Options.CursorTrail.TECZA});
+		c.clickEffect = rnd(r, java.util.Arrays.stream(Options.ClickEffect.values())
+				.filter(e -> e != Options.ClickEffect.BRAK).toArray(Options.ClickEffect[]::new));
+		c.cursorTrail = rnd(r, java.util.Arrays.stream(Options.CursorTrail.values())
+				.filter(e -> e != Options.CursorTrail.BRAK).toArray(Options.CursorTrail[]::new));
 		ZiemniakConfig.save();
 		FemboyTheme.resetOpened(this);
 	}

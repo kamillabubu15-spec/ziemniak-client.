@@ -4,6 +4,8 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -47,8 +49,40 @@ public class ZiemniakConfig {
 	public Options.CursorTrail cursorTrail = Options.CursorTrail.ISKIERKI;
 	public boolean cursorHeart = true;
 
+	// ---------------------------------------------------------------- menu
+	public boolean themeTitleScreen = true;
+	public boolean themeAllMenus = true;
+
 	// ---------------------------------------------------------------- shadery
 	public String shader = "brak";
+
+	// ---------------------------------------------------------------- HUD
+	public boolean hudEnabled = true;
+	public boolean hudBackground = true;
+	public Options.HudScale hudScale = Options.HudScale.S100;
+	public boolean lowHpWarning = true;
+	public Map<String, HudPos> hud = new LinkedHashMap<>();
+
+	public static class HudPos {
+		public boolean on;
+		public float x;
+		public float y;
+
+		public HudPos() {}
+
+		public HudPos(boolean on, float x, float y) {
+			this.on = on;
+			this.x = x;
+			this.y = y;
+		}
+	}
+
+	// ---------------------------------------------------------------- narzedzia
+	public boolean zoomEnabled = true;
+	public boolean zoomSmooth = true;
+	public Options.ZoomLevel zoomLevel = Options.ZoomLevel.X4;
+	public boolean fullbright = false;
+	public Options.Crosshair crosshair = Options.Crosshair.VANILLA;
 
 	public static ZiemniakConfig get() {
 		if (instance == null) load();
@@ -98,5 +132,9 @@ public class ZiemniakConfig {
 		if (clickEffect == null) clickEffect = Options.ClickEffect.SERDUSZKA;
 		if (cursorTrail == null) cursorTrail = Options.CursorTrail.ISKIERKI;
 		if (shader == null) shader = "brak";
+		if (hudScale == null) hudScale = Options.HudScale.S100;
+		if (hud == null) hud = new LinkedHashMap<>();
+		if (zoomLevel == null) zoomLevel = Options.ZoomLevel.X4;
+		if (crosshair == null) crosshair = Options.Crosshair.VANILLA;
 	}
 }

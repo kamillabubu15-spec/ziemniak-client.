@@ -50,9 +50,17 @@ public final class ShaderManager {
 
 	public static final List<OwnShader> OWN = List.of(
 			new OwnShader("brak", "Brak", "zwykly Minecraft"),
-			new OwnShader("rozowy_sen", "Rozowy Sen", "rozowa poswiata, lawendowe cienie"),
-			new OwnShader("zlota_godzina", "Zlota Godzina", "cieply zachod slonca, bloom"),
-			new OwnShader("anime", "Anime", "kontury jak w kreskowce"));
+			new OwnShader("rozowy_sen", "Rozowy Sen", "rozowe niebo, lawendowe cienie"),
+			new OwnShader("zlota_godzina", "Zlota Godzina", "zachod slonca, cieple swiatlo"),
+			new OwnShader("anime", "Anime", "kontury jak w kreskowce"),
+			new OwnShader("sny_sakury", "Sny Sakury", "spadajace platki wisni"),
+			new OwnShader("neon_noc", "Neon Noc", "cyberpunk, gwiazdy, neon"),
+			new OwnShader("retro_vhs", "Retro VHS", "stara kaseta wideo"),
+			new OwnShader("akwarela", "Akwarela", "obraz malowany farbami"),
+			new OwnShader("zimowy_poranek", "Zimowy Poranek", "chlodne, mrozne swiatlo"),
+			new OwnShader("cukierkowy", "Cukierkowy", "mocne pastelowe kolory"),
+			new OwnShader("noir", "Noir", "czarno-bialy film"),
+			new OwnShader("stara_fotografia", "Stara Fotografia", "sepia, winieta"));
 
 	public static Identifier postId(String id) {
 		return Identifier.of("ziemniak", id);
@@ -64,6 +72,7 @@ public final class ShaderManager {
 		if (sel == null || sel.equals("brak") || OWN.stream().noneMatch(s -> s.id().equals(sel))) return;
 		PostEffectProcessor p = mc.getShaderLoader().loadPostEffect(postId(sel), DefaultFramebufferSet.MAIN_ONLY);
 		if (p == null) return;
+		p.setUniforms("Time", (System.currentTimeMillis() % 3_600_000L) / 1000f * (float) com.ziemniak.client.theme.FemboyTheme.timeScale());
 		p.render(mc.getFramebuffer(), pool);
 		mc.getFramebuffer().beginWrite(true);
 	}

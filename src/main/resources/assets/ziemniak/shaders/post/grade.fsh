@@ -20,6 +20,7 @@ uniform vec3 SkyMid;
 uniform vec3 SkyBottom;
 uniform float SkyMix;
 uniform vec3 Balance;
+uniform vec3 PostTint;
 
 in vec2 texCoord;
 out vec4 fragColor;
@@ -60,7 +61,7 @@ void main() {
 
     // nasycenie
     l = luma(c);
-    c = mix(vec3(l), c, Saturation);
+    c = mix(vec3(l), c, Saturation) * PostTint;
 
     // winieta w kolorze
     vec2 d = texCoord - 0.5;

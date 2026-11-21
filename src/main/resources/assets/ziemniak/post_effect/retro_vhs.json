@@ -1,0 +1,29 @@
+{
+    "targets": {
+        "a": {},
+        "b": {}
+    },
+    "passes": [
+        {
+            "program": "ziemniak:post/vhs",
+            "inputs": [
+                {
+                    "sampler_name": "In",
+                    "target": "minecraft:main",
+                    "bilinear": true
+                }
+            ],
+            "output": "a"
+        },
+        {
+            "program": "minecraft:post/blit",
+            "inputs": [
+                {
+                    "sampler_name": "In",
+                    "target": "a"
+                }
+            ],
+            "output": "minecraft:main"
+        }
+    ]
+}

@@ -19,6 +19,6 @@ public abstract class ScreenMixin {
 	@Inject(method = "renderBackground", at = @At("TAIL"))
 	private void ziemniak$themedBackground(DrawContext ctx, int mouseX, int mouseY, float delta, CallbackInfo ci) {
 		Screen self = (Screen) (Object) this;
-		if (FemboyTheme.isPause(self)) FemboyTheme.drawBackground(ctx, self, width, height);
+		if (FemboyTheme.isPause(self) || FemboyTheme.isOtherMenu(self)) FemboyTheme.drawBackground(ctx, self, width, height);
 	}
 }

@@ -1,39 +1,74 @@
 # Ziemniak Client (Fabric 1.21.4)
 
-Fioletowy mod client-side: legalny PvP-HUD + kilka przelacznikow FPS.
-Menu otwierasz w grze klawiszem **RIGHT SHIFT**.
+Pastelowy (femboy) mod client-side: motyw menu i ekwipunku z animacjami, wlasne shadery,
+pobieranie shaderow z internetu, HUD z edytorem, zoom, fullbright, wlasne celowniki.
 
-## Co jest w srodku
-- Hit Indicator - fioletowy "flash" przy trafieniu (bez zmiany hitboxow/zasiegu)
-- Combo Counter - licznik trafien pod rzad
-- Custom Crosshair - fioletowa obwodka celownika
-- Enemy HP HUD - pasek HP celu, na ktory patrzysz
-- FPS Booster - mniej czasteczek, wylaczone chmury, fast graphics (przelaczniki wbudowanych opcji gry)
-- Config zapisuje sie do `.minecraft/config/ziemniak-client.json`
+- Menu moda: przycisk **"Ziemniak Mod"** w menu ESC albo klawisz **Prawy Shift**.
+- Zoom: trzymaj **C** (kolko myszy = mocniej/slabiej).
+- Wszystko zapisuje sie w `.minecraft/config/ziemniak-client.json`.
+
+![Menu ESC](podglad/menu-esc.png)
+![Menu moda](podglad/ziemniak-mod-menu.png)
+
+Filmiki (po 1 s): `podglad/menu-esc.mp4`, `podglad/ziemniak-mod-menu.mp4`,
+`podglad/shader-sny-sakury.mp4`, `podglad/ekwipunek.mp4`.
+
+## Zakladki menu moda
+
+**Shadery**
+- 11 wlasnych shaderow (dzialaja od razu, bez Iris, lekkie dla komputera):
+  Rozowy Sen, Zlota Godzina, Anime, Sny Sakury (spadajace platki), Neon Noc (gwiazdy),
+  Retro VHS, Akwarela, Zimowy Poranek, Cukierkowy, Noir, Stara Fotografia.
+- 10 shaderow z internetu (Modrinth) do pobrania jednym kliknieciem, podzielonych na
+  Lekkie / Srednie / Mocne: MakeUp Ultra Fast, Vanilla Plus, Super Duper Vanilla, BSL,
+  Complementary Reimagined, Complementary Unbound, Solas, Bliss, Photon, Sildur's Vibrant.
+- Przycisk "Pobierz Iris + Sodium" (shadery z netu potrzebuja Iris), potem "Wlacz" przy paczce.
+- "Twoj komputer": nazwa karty graficznej, FPS i polecana grupa shaderow.
+
+![Shadery](podglad/shadery-porownanie.png)
+![Shadery 2](podglad/shadery-porownanie-2.png)
+
+**Motyw**: 16 palet, 7 rodzajow tla (gradient, zorza, tecza, gwiazdy, kratka, fale, bokeh),
+12 rodzajow czasteczek + mix (serduszka, gwiazdki, sakura, babelki, motylki, snieg, nutki,
+kocie lapki, chmurki, truskawki, diamenty, kotki), 4 style przyciskow, 4 predkosci animacji,
+4 animacje otwierania ekwipunku, motyw na ekranie glownym i we wszystkich menu (tez suwaki),
+"Losuj wszystko!" i "Reset".
+
+**Animacje**: 14 przelacznikow (czasteczki, iskierki, spadajace gwiazdy, wjazd przyciskow,
+poswiata, blysk, serduszka przy napisie, podskok, serca przy tytule, falujacy napis,
+poswiata panelu, kokardka, serca w rogach, ramka slotu).
+
+**Kursor i klik**: 7 efektow klikniecia, 5 sladow kursora, serduszko przy kursorze.
+
+**HUD**: 13 modulow (FPS, ping, koordynaty+kierunek+biom, zegar, predkosc, sesja, efekty mikstur,
+klawisze + CPS, zbroja z wytrzymaloscia, licznik przedmiotow, cel z paskiem HP, combo, kompas),
+edytor przeciagania myszka, skala HUD, tlo modulow, ostrzezenie przy niskim HP.
+
+**Narzedzia**: zoom (2x/4x/6x/10x, plynna kamera), fullbright, 6 wlasnych celownikow,
+sprint/skradanie na przelacznik (opcje Minecrafta).
+
+![HUD](podglad/hud.png)
+![Edytor HUD](podglad/edytor-hud.png)
 
 ## Femboy motyw (menu ESC + ekwipunek)
-![Menu ESC](podglad/menu-esc.png)
 ![Ekwipunek](podglad/ekwipunek.png)
 
-Filmiki: `podglad/menu-esc.mp4`, `podglad/ekwipunek.mp4`.
-
 **Menu ESC**
-- rozowo-lawendowe tlo, ktore plynnie zmienia kolor
-- serduszka plynace do gory + migajace iskierki
+- tlo, czasteczki i iskierki wedlug ustawien motywu
 - przyciski wjezdzaja na zmiane z lewej i prawej z odbiciem
-- zaokraglone rozowe przyciski: po najechaniu powiekszaja sie, swieca, przelatuje po nich blask, a obok napisu wskakuja serduszka
+- zaokraglone przyciski: po najechaniu powiekszaja sie, swieca, przelatuje po nich blask, a obok napisu wskakuja serduszka
 - pulsujace serduszka przy tytule, falujacy napis "ziemniak client" na dole
-- wybuch serduszek przy kazdym kliknieciu, male serduszko przy kursorze
+- przycisk "Ziemniak Mod" w miejscu "Give Feedback" i "Report Bugs"
 
 **Ekwipunek (i kazdy inny ekran ze slotami: skrzynia, piec itd.)**
-- panel "wyskakuje" przy otwarciu (animacja pop)
-- rozowy odcien panelu, pulsujaca poswiata wokol, kokardka na gorze, serduszka w rogach
-- slot pod myszka: pulsujaca rozowa ramka i skaczace serduszko
-- to samo tlo z serduszkami i wybuch serduszek przy kliknieciu
+- animacja otwarcia (pop / wjazd z dolu / obrot / sprezyna)
+- odcien panelu, pulsujaca poswiata wokol, kokardka na gorze, serduszka w rogach
+- slot pod myszka: pulsujaca ramka i skaczace serduszko
 
-Kod: `src/main/java/com/ziemniak/client/theme/FemboyTheme.java` + mixiny w `mixin/`.
+Kod: `src/main/java/com/ziemniak/client/` (`theme/`, `shader/`, `hud/`, `screen/`, `mixin/`),
+shadery w `src/main/resources/assets/ziemniak/`.
 
-## Jak zbudowac (potrzebujesz internetu - ja go tu nie mam)
+## Jak zbudowac (potrzebujesz internetu)
 1. Zainstaluj **JDK 21**.
 2. Wypakuj ten folder, wejdz w niego w terminalu.
 3. `./gradlew build` (Windows: `gradlew.bat build`) - Gradle sam sciagnie
@@ -62,6 +97,7 @@ bo numerki wersji zmieniaja sie co jakis czas.
   (hit indicator, combo, HP HUD).
 
 ## Rozwoj
-Kolejne moduly HUD dodajesz jako nowa klasa w `features/`, rejestrujesz
-w `ZiemniakClient.onInitializeClient()` i dodajesz przelacznik w
-`ZiemniakMenuScreen` + pole w `ZiemniakConfig`.
+- Nowy modul HUD: dopisz `MODULES.add(...)` w `hud/HudManager.java` - sam pojawi sie w zakladce HUD i w edytorze.
+- Nowy wlasny shader: plik `post_effect/<nazwa>.json` (+ ewentualnie program w `shaders/post/`)
+  i jedna linijka w `ShaderManager.OWN`.
+- Nowa opcja: pole w `ZiemniakConfig` + przycisk w `ZiemniakMenuScreen`.

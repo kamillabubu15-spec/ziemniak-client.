@@ -21,7 +21,7 @@ public abstract class PressableWidgetMixin extends ClickableWidget {
 
 	@Inject(method = "renderWidget", at = @At("HEAD"), cancellable = true)
 	private void ziemniak$pastelButton(DrawContext ctx, int mouseX, int mouseY, float delta, CallbackInfo ci) {
-		if (!FemboyTheme.isPause(MinecraftClient.getInstance().currentScreen)) return;
+		if (!FemboyTheme.stylesButtons(MinecraftClient.getInstance().currentScreen)) return;
 		FemboyTheme.renderButton(ctx, this, this.alpha, this.isSelected(), this.active);
 		ci.cancel();
 	}

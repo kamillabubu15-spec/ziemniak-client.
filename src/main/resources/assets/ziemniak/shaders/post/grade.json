@@ -1,0 +1,192 @@
+{
+    "vertex": "minecraft:post/blit",
+    "fragment": "ziemniak:post/grade",
+    "samplers": [
+        {
+            "name": "InSampler"
+        },
+        {
+            "name": "BloomSampler"
+        },
+        {
+            "name": "DepthSampler"
+        }
+    ],
+    "uniforms": [
+        {
+            "name": "ProjMat",
+            "type": "matrix4x4",
+            "count": 16,
+            "values": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ]
+        },
+        {
+            "name": "InSize",
+            "type": "float",
+            "count": 2,
+            "values": [
+                1.0,
+                1.0
+            ]
+        },
+        {
+            "name": "OutSize",
+            "type": "float",
+            "count": 2,
+            "values": [
+                1.0,
+                1.0
+            ]
+        },
+        {
+            "name": "BloomStrength",
+            "type": "float",
+            "count": 1,
+            "values": [
+                0.8
+            ]
+        },
+        {
+            "name": "ShadowTint",
+            "type": "float",
+            "count": 3,
+            "values": [
+                0.5,
+                0.5,
+                0.5
+            ]
+        },
+        {
+            "name": "HighlightTint",
+            "type": "float",
+            "count": 3,
+            "values": [
+                0.5,
+                0.5,
+                0.5
+            ]
+        },
+        {
+            "name": "ToneStrength",
+            "type": "float",
+            "count": 1,
+            "values": [
+                0.5
+            ]
+        },
+        {
+            "name": "Saturation",
+            "type": "float",
+            "count": 1,
+            "values": [
+                1.0
+            ]
+        },
+        {
+            "name": "Contrast",
+            "type": "float",
+            "count": 1,
+            "values": [
+                1.0
+            ]
+        },
+        {
+            "name": "Exposure",
+            "type": "float",
+            "count": 1,
+            "values": [
+                1.0
+            ]
+        },
+        {
+            "name": "Vignette",
+            "type": "float",
+            "count": 1,
+            "values": [
+                0.4
+            ]
+        },
+        {
+            "name": "VignetteTint",
+            "type": "float",
+            "count": 3,
+            "values": [
+                0.0,
+                0.0,
+                0.0
+            ]
+        },
+        {
+            "name": "Haze",
+            "type": "float",
+            "count": 1,
+            "values": [
+                0.0
+            ]
+        },
+        {
+            "name": "SkyTop",
+            "type": "float",
+            "count": 3,
+            "values": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        {
+            "name": "SkyMid",
+            "type": "float",
+            "count": 3,
+            "values": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        {
+            "name": "SkyBottom",
+            "type": "float",
+            "count": 3,
+            "values": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        {
+            "name": "SkyMix",
+            "type": "float",
+            "count": 1,
+            "values": [
+                0.0
+            ]
+        },
+        {
+            "name": "Balance",
+            "type": "float",
+            "count": 3,
+            "values": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        }
+    ]
+}

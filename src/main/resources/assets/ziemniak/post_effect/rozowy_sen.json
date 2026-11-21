@@ -1,0 +1,279 @@
+{
+    "targets": {
+        "a": {},
+        "b": {}
+    },
+    "passes": [
+        {
+            "program": "ziemniak:post/bright",
+            "inputs": [
+                {
+                    "sampler_name": "In",
+                    "target": "minecraft:main"
+                },
+                {
+                    "sampler_name": "Depth",
+                    "target": "minecraft:main",
+                    "use_depth_buffer": true
+                }
+            ],
+            "output": "a",
+            "uniforms": [
+                {
+                    "name": "Threshold",
+                    "values": [
+                        0.6
+                    ]
+                },
+                {
+                    "name": "Tint",
+                    "values": [
+                        1.0,
+                        0.78,
+                        0.95
+                    ]
+                }
+            ]
+        },
+        {
+            "program": "minecraft:post/box_blur",
+            "inputs": [
+                {
+                    "sampler_name": "In",
+                    "target": "a",
+                    "bilinear": true
+                }
+            ],
+            "output": "b",
+            "uniforms": [
+                {
+                    "name": "BlurDir",
+                    "values": [
+                        1.0,
+                        0.0
+                    ]
+                },
+                {
+                    "name": "Radius",
+                    "values": [
+                        20.0
+                    ]
+                }
+            ]
+        },
+        {
+            "program": "minecraft:post/box_blur",
+            "inputs": [
+                {
+                    "sampler_name": "In",
+                    "target": "b",
+                    "bilinear": true
+                }
+            ],
+            "output": "a",
+            "uniforms": [
+                {
+                    "name": "BlurDir",
+                    "values": [
+                        0.0,
+                        1.0
+                    ]
+                },
+                {
+                    "name": "Radius",
+                    "values": [
+                        20.0
+                    ]
+                }
+            ]
+        },
+        {
+            "program": "minecraft:post/box_blur",
+            "inputs": [
+                {
+                    "sampler_name": "In",
+                    "target": "a",
+                    "bilinear": true
+                }
+            ],
+            "output": "b",
+            "uniforms": [
+                {
+                    "name": "BlurDir",
+                    "values": [
+                        1.0,
+                        0.0
+                    ]
+                },
+                {
+                    "name": "Radius",
+                    "values": [
+                        9.0
+                    ]
+                }
+            ]
+        },
+        {
+            "program": "minecraft:post/box_blur",
+            "inputs": [
+                {
+                    "sampler_name": "In",
+                    "target": "b",
+                    "bilinear": true
+                }
+            ],
+            "output": "a",
+            "uniforms": [
+                {
+                    "name": "BlurDir",
+                    "values": [
+                        0.0,
+                        1.0
+                    ]
+                },
+                {
+                    "name": "Radius",
+                    "values": [
+                        9.0
+                    ]
+                }
+            ]
+        },
+        {
+            "program": "ziemniak:post/grade",
+            "inputs": [
+                {
+                    "sampler_name": "In",
+                    "target": "minecraft:main"
+                },
+                {
+                    "sampler_name": "Bloom",
+                    "target": "a",
+                    "bilinear": true
+                },
+                {
+                    "sampler_name": "Depth",
+                    "target": "minecraft:main",
+                    "use_depth_buffer": true
+                }
+            ],
+            "output": "b",
+            "uniforms": [
+                {
+                    "name": "BloomStrength",
+                    "values": [
+                        0.7
+                    ]
+                },
+                {
+                    "name": "ShadowTint",
+                    "values": [
+                        0.42,
+                        0.2,
+                        0.55
+                    ]
+                },
+                {
+                    "name": "HighlightTint",
+                    "values": [
+                        0.5,
+                        0.18,
+                        0.36
+                    ]
+                },
+                {
+                    "name": "ToneStrength",
+                    "values": [
+                        0.55
+                    ]
+                },
+                {
+                    "name": "Saturation",
+                    "values": [
+                        1.1
+                    ]
+                },
+                {
+                    "name": "Contrast",
+                    "values": [
+                        0.96
+                    ]
+                },
+                {
+                    "name": "Exposure",
+                    "values": [
+                        1.08
+                    ]
+                },
+                {
+                    "name": "Vignette",
+                    "values": [
+                        0.45
+                    ]
+                },
+                {
+                    "name": "VignetteTint",
+                    "values": [
+                        1.0,
+                        0.55,
+                        0.82
+                    ]
+                },
+                {
+                    "name": "Haze",
+                    "values": [
+                        0.15
+                    ]
+                },
+                {
+                    "name": "SkyTop",
+                    "values": [
+                        0.8,
+                        0.64,
+                        1.0
+                    ]
+                },
+                {
+                    "name": "SkyMid",
+                    "values": [
+                        1.0,
+                        0.7,
+                        0.88
+                    ]
+                },
+                {
+                    "name": "SkyBottom",
+                    "values": [
+                        1.0,
+                        0.88,
+                        0.95
+                    ]
+                },
+                {
+                    "name": "SkyMix",
+                    "values": [
+                        1.0
+                    ]
+                },
+                {
+                    "name": "Balance",
+                    "values": [
+                        1.05,
+                        0.97,
+                        1.06
+                    ]
+                }
+            ]
+        },
+        {
+            "program": "minecraft:post/blit",
+            "inputs": [
+                {
+                    "sampler_name": "In",
+                    "target": "b"
+                }
+            ],
+            "output": "minecraft:main"
+        }
+    ]
+}

@@ -1,0 +1,32 @@
+{
+    "targets": {
+        "a": {}
+    },
+    "passes": [
+        {
+            "program": "ziemniak:post/anime",
+            "inputs": [
+                {
+                    "sampler_name": "In",
+                    "target": "minecraft:main"
+                },
+                {
+                    "sampler_name": "Depth",
+                    "target": "minecraft:main",
+                    "use_depth_buffer": true
+                }
+            ],
+            "output": "a"
+        },
+        {
+            "program": "minecraft:post/blit",
+            "inputs": [
+                {
+                    "sampler_name": "In",
+                    "target": "a"
+                }
+            ],
+            "output": "minecraft:main"
+        }
+    ]
+}

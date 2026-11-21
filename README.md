@@ -7,6 +7,10 @@ pobieranie shaderow z internetu, HUD z edytorem, zoom, fullbright, wlasne celown
 - Zoom: trzymaj **C** (kolko myszy = mocniej/slabiej).
 - Wszystko zapisuje sie w `.minecraft/config/ziemniak-client.json`.
 
+**Film promocyjny (25 s, z muzyka):** `podglad/ziemniak-client-promo.mp4`
+
+![Film promocyjny](podglad/ziemniak-client-promo-miniatura.png)
+
 ![Menu ESC](podglad/menu-esc.png)
 ![Menu moda](podglad/ziemniak-mod-menu.png)
 
